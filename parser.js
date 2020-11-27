@@ -270,5 +270,10 @@ function endToken() {
 }
 
 function parse(s) {
-	return parseExpr(addImplicitMuls(parseLatex(s)));
+	try {
+		return parseExpr(addImplicitMuls(parseLatex(s)));
+	} catch (err) {
+		console.log('caught error ' + err + ' in parse');
+		return null;
+	}
 }

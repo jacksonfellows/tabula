@@ -126,6 +126,18 @@ function expandCommand(command, arguments) {
 	}
 }
 
+function addImplicitMuls(latex) {
+	var newLatex = [];
+	for (var i = 0; i < latex.length - 1; i++) {
+		newLatex.push(latex[i]);
+		if ((latex[i].type === 'literal' || latex[i].type === 'rparen') && (latex[i+1].type === 'literal' || latex[i+1].type === 'lparen')) {
+			newLatex.push(operatorToken('*'));
+		}
+	}
+	newLatex.push(latex.length-1);
+	return newLatex;
+}
+
 var token, next;
 
 function parseExpr(latex) {
@@ -148,6 +160,7 @@ function expression(rbp = 0) {
 
 function literalToken(value) {
 	return {
+		type: 'literal',
 		nud: function() {
 			return value;
 		}
@@ -225,10 +238,11 @@ function operatorPowToken() {
 
 function operatorLparenToken() {
 	return {
+		type: 'lparen',
 		lbp: 0,
 		nud: function() {
 			var expr = expression();
-			if (!token.isRparen) {
+			if (token.type != 'rparen') {
 				throw 'expecting closing )';
 			}
 			token = next();
@@ -239,7 +253,7 @@ function operatorLparenToken() {
 
 function operatorRparenToken() {
 	return {
-		isRparen: true,
+		type: 'rparen',
 		lbp: 0
 	};
 }
@@ -251,5 +265,5 @@ function endToken() {
 }
 
 function parse(s) {
-	return parseExpr(parseLatex(s));
+	return parseExpr(addImplicitMuls(parseLatex(s)));
 }

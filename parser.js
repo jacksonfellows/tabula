@@ -121,6 +121,10 @@ function expandCommand(command, arguments) {
 		return [operatorToken('('), ...arguments[0], operatorToken(')'), operatorToken('^'), operatorToken('('), literalToken(1), operatorToken('/'), literalToken(2), operatorToken(')')];
 	case 'cdot':
 		return [operatorToken('*')];
+	case 'left(':
+		return [operatorToken('(')];
+	case 'right)':
+		return [operatorToken(')')];
 	default:
 		throw 'unsupported command: ' + command;
 	}

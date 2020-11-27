@@ -19,7 +19,7 @@ function isValidCommandChar(c) {
 }
 
 function isWhitespace(c) {
-	return c == ' ';
+	return c === ' ';
 }
 
 function charToDigit(c) {
@@ -35,7 +35,7 @@ function parseLatex(s) {
 		inp.consume();
 		var [contents, newInp] = parseLatexInp(inp);
 		inp = newInp;
-		if (inp.consume() != '}') {
+		if (inp.consume() !== '}') {
 			throw 'no closing }';
 		}
 		return [contents, inp];
@@ -43,8 +43,8 @@ function parseLatex(s) {
 
 	function parseLatexInp(inp) {
 		var latex = [];
-		while (inp.peek() && inp.peek() != '}') {
-			if (inp.peek() == '\\') {
+		while (inp.peek() && inp.peek() !== '}') {
+			if (inp.peek() === '\\') {
 				// command
 				inp.consume();
 				var command = '';
@@ -56,20 +56,20 @@ function parseLatex(s) {
 					}
 				}
 				if (command === 'text') {
-					if (inp.consume() != '{') {
+					if (inp.consume() !== '{') {
 						throw '\\text with no {';
 					}
 					var text = '';
-					while (inp.peek() != '}') {
+					while (inp.peek() !== '}') {
 						text += inp.consume();
 					}
-					if (inp.consume() != '}') {
+					if (inp.consume() !== '}') {
 						throw 'no closing } in \\text';
 					}
 					latex.push(literalToken(text));
 				} else {
 					var arguments = [];
-					while (inp.peek() == '{') {
+					while (inp.peek() === '{') {
 						var [arg, newInp] = parseBracketed(inp);
 						arguments.push(arg);
 						inp = newInp;
@@ -77,7 +77,7 @@ function parseLatex(s) {
 					latex.push(...expandCommand(command, arguments));
 				}
 			}
-			else if (inp.peek() == '{') {
+			else if (inp.peek() === '{') {
 				var [arg, newInp] = parseBracketed(inp);
 				latex.push(operatorToken('('), ...arg, operatorToken(')'));
 				inp = newInp;
@@ -247,7 +247,7 @@ function operatorLparenToken() {
 		lbp: 0,
 		nud: function() {
 			var expr = expression();
-			if (token.type != 'rparen') {
+			if (token.type !== 'rparen') {
 				throw 'expecting closing )';
 			}
 			token = next();

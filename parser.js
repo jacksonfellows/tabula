@@ -79,7 +79,7 @@ function parseLatex(s) {
 			}
 			else if (inp.peek() == '{') {
 				var [arg, newInp] = parseBracketed(inp);
-				latex.push(arg);
+				latex.push(operatorToken('('), ...arg, operatorToken(')'));
 				inp = newInp;
 			} else if (isDigit(inp.peek())) {
 				// number

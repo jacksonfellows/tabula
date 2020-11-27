@@ -15,7 +15,7 @@ function isDigit(c) {
 }
 
 function isValidCommandChar(c) {
-	return !/[ {}\\,]/.test(c);
+	return !/[0-9 {}\\,-]/.test(c);
 }
 
 function isWhitespace(c) {

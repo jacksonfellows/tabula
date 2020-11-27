@@ -222,11 +222,12 @@ function operatorMulToken() {
 	};
 }
 
+// / is only used for fractions right now, so I think this higher precedence is fine
 function operatorDivToken() {
 	return {
-		lbp: 20,
+		lbp: 25,
 		led: function(left) {
-			return ['/', left, expression(20)];
+			return ['/', left, expression(25)];
 		}
 	};
 }

@@ -129,6 +129,8 @@ function expandCommand(command, arguments) {
 		return [operatorToken('[')];
 	case 'right]':
 		return [operatorToken(']')];
+	case 'equiv':
+		return [operatorToken('equiv')];
 	default:
 		throw 'unsupported command: ' + command;
 	}
@@ -197,6 +199,8 @@ function operatorToken(op) {
 		return operatorRbracketToken();
 	case ',':
 		return operatorCommaToken();
+	case 'equiv':
+		return operatorEquivToken();
 	default:
 		throw 'unsupported operator: ' + op;
 	}
@@ -307,6 +311,15 @@ function operatorRbracketToken() {
 function operatorCommaToken() {
 	return {
 		type: 'comma'
+	};
+}
+
+function operatorEquivToken() {
+	return {
+		lbp: 5,
+		led: function(left) {
+			return ['define', left, expression(5)];
+		}
 	};
 }
 

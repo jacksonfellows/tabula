@@ -125,6 +125,10 @@ function expandCommand(command, arguments) {
 		return [operatorToken('(')];
 	case 'right)':
 		return [operatorToken(')')];
+	case 'left[':
+		return [operatorToken('[')];
+	case 'right]':
+		return [operatorToken(']')];
 	default:
 		throw 'unsupported command: ' + command;
 	}
@@ -187,6 +191,12 @@ function operatorToken(op) {
 		return operatorLparenToken();
 	case ')':
 		return operatorRparenToken();
+	case '[':
+		return operatorLbracketToken();
+	case ']':
+		return operatorRbracketToken();
+	case ',':
+		return operatorCommaToken();
 	default:
 		throw 'unsupported operator: ' + op;
 	}
@@ -260,6 +270,43 @@ function operatorRparenToken() {
 	return {
 		type: 'rparen',
 		lbp: 0
+	};
+}
+
+function operatorLbracketToken() {
+	return {
+		type: 'lbracket',
+		lbp: 100,
+		led: function(left) {
+			var form = [left];
+			if (token.type != 'rbracket') {
+				while (true) {
+					form.push(expression(0));
+					if (token.type !== 'comma') {
+						break;
+					}
+					token = next();
+				}
+			}
+			if (token.type !== 'rbracket') {
+				throw 'expecting closing ]';
+			}
+			token = next();
+			return form;
+		}
+	};
+}
+
+function operatorRbracketToken() {
+	return {
+		type: 'rbracket',
+		lbp: 0
+	};
+}
+
+function operatorCommaToken() {
+	return {
+		type: 'comma'
 	};
 }
 

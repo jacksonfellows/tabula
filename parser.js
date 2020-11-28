@@ -93,7 +93,13 @@ function parseLatex(s) {
 				inp.consume();
 			} else if (isAlpha(inp.peek())) {
 				// variable
-				latex.push(literalToken(inp.consume()));
+				var v = inp.consume();
+				if (inp.peek() == '.') {
+					inp.consume();
+					latex.push(literalToken(['.', v]));
+				} else {
+					latex.push(literalToken(v));
+				}
 			} else {
 				// operator
 				latex.push(operatorToken(inp.consume()));

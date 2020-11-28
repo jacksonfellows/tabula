@@ -219,7 +219,7 @@ function operatorSubToken() {
 	return {
 		lbp: 10,
 		nud: function() {
-			return ['-', expression(100)];
+			return ['-', expression(27)];
 		},
 		led: function(left) {
 			return ['-', left, expression(10)];

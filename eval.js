@@ -10,14 +10,11 @@ var config = {
 };
 
 function addInputBox() {
-	var id = maxID + 1
-	console.log(id)
-	maxID = id
+	var id = ++maxID
 	$("#fields").append("<p><span id=\"I" + id + "\" style=\"width: 100%\"></span></p>",
 		"<p id=\"O" + id + "\"></p>",
 		"<p><button onclick=\"updateOutputBox(" + id + ")\">evaluate cell</button></p>");
 	var mathSpan = $("span:last")[0];
-	console.log($(this))
 	MQ.MathField(mathSpan, config);
 }
 

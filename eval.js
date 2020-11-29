@@ -1,5 +1,6 @@
 var MQ = MathQuill.getInterface(2);
-var maxID = 0
+var maxID = -1
+var mathFields = [];
 
 var config = {
 	spaceBehavesLikeTab: true,
@@ -11,16 +12,20 @@ var config = {
 
 function addInputBox() {
 	var id = ++maxID
-	$("#fields").append("<p><span id=\"I" + id + "\" style=\"width: 100%\"></span></p>",
+	$("#fields").append("<p><span style=\"width: 100%\"></span></p>",
 		"<p id=\"O" + id + "\"></p>",
 		"<p><button onclick=\"updateOutputBox(" + id + ")\">evaluate cell</button></p>");
 	var mathSpan = $("span:last")[0];
-	MQ.MathField(mathSpan, config);
+	mathFields.push(MQ.MathField(mathSpan, config));
 }
 
 function updateOutputBox(id) {
-	var mathSpan = document.getElementById("I" + id);
 	var parsed = document.getElementById("O" + id);
-	var mathField = MQ.MathField(mathSpan, config);
-	parsed.textContent = JSON.stringify(parse(mathField.latex()));
+	parsed.textContent = JSON.stringify(parse(mathFields[id].latex()));
+}
+
+function updateAllOutputBoxes() {
+	for (var id = 0; id < mathFields.length; id++) {
+		updateOutputBox(id);
+	}
 }

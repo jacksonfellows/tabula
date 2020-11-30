@@ -132,9 +132,37 @@ function treeEquals(a, b) {
 	return false;
 }
 
+var flatOperators = {
+	'+': true,
+	'*': true
+};
+
+function flattenFlatOperators(tree) {
+	if (!Array.isArray(tree)) {
+		return tree;
+	}
+	if (tree.length == 0) {
+		return tree;
+	}
+	if (flatOperators[head(tree)]) {
+		var newTree = [head(tree)];
+		for (var i = 1; i < tree.length; i++) {
+			var subtree = flattenFlatOperators(tree[i]);
+			if (Array.isArray(subtree) && head(tree) === head(subtree)) {
+				newTree.push(...tail(subtree));
+			} else {
+				newTree.push(subtree);
+			}
+		}
+		return newTree;
+	}
+	return tree.map(flattenFlatOperators);
+}
+
 var replacements = [];
 
 function evalReplacements(tree) {
+	tree = flattenFlatOperators(tree);
 	if (head(tree) === 'define') {
 		replacements.push([tree[1], tree[2]]);
 		return 'stored definition';
@@ -145,7 +173,7 @@ function evalReplacements(tree) {
 		// newest to oldest
 		for (var i = replacements.length - 1; i >= 0; i--) {
 			var [pattern, replacement] = replacements[i];
-			newTree = findMatchAndReplace(newTree, pattern, replacement);
+			newTree = flattenFlatOperators(findMatchAndReplace(newTree, pattern, replacement));
 		}
 	} while (!treeEquals(tree, newTree));
 	return tree;

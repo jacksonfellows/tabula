@@ -20,8 +20,8 @@ function addInputBox() {
 }
 
 function updateOutputBox(id) {
-	var parsed = document.getElementById("O" + id);
-	parsed.textContent = JSON.stringify(parse(mathFields[id].latex()));
+	var output = document.getElementById("O" + id);
+	output.textContent = JSON.stringify(evalReplacements(parse(mathFields[id].latex())));
 }
 
 function updateAllOutputBoxes() {

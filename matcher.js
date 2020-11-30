@@ -113,5 +113,38 @@ function findMatchAndReplace(tree, pattern, replacement) {
 		var [subtreeIndices, captures] = matchInfo;
 		return replace(tree, subtreeIndices, replacement, captures);
 	}
-	return null;
+	return tree;
+}
+
+function treeEquals(a, b) {
+	if (!Array.isArray(a) && !Array.isArray(b)) {
+		return a === b;
+	}
+	if (Array.isArray(a) && Array.isArray(b)) {
+		if (a.length != b.length) {
+			return false;
+		}
+		if (a.length == 0 && b.length == 0) {
+			return true;
+		}
+		return treeEquals(head(a), head(b)) && treeEquals(tail(a), tail(b));
+	}
+	return false;
+}
+
+var replacements = [];
+
+function evalReplacements(tree) {
+	if (head(tree) === 'define') {
+		replacements.push([tree[1], tree[2]]);
+		return 'stored definition';
+	}
+	var newTree = tree;
+	do {
+		tree = newTree;
+		for (var [pattern, replacement] of replacements) {
+			newTree = findMatchAndReplace(newTree, pattern, replacement);
+		}
+	} while (!treeEquals(tree, newTree));
+	return tree;
 }

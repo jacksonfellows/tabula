@@ -225,10 +225,10 @@ function operatorSubToken() {
 	return {
 		lbp: 10,
 		nud: function() {
-			return ['-', expression(27)];
+			return ['*', -1, expression(27)];
 		},
 		led: function(left) {
-			return ['-', left, expression(10)];
+			return ['+', left, ['*', -1, expression(10)]];
 		}
 	};
 }

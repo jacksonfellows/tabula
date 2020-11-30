@@ -43,6 +43,8 @@ function printLatex(tree) {
 		return s;
 	case '/':
 		return '\\frac{' + printLatex(tree[1]) + '}{' + printLatex(tree[2]) + '}';
+	case '^':
+		return (Array.isArray(tree[1]) ? '\\left(' + printLatex(tree[1]) + '\\right)' : printLatex(tree[1])) + '^' + '{' + printLatex(tree[2]) + '}';
 	default:
 		return tree[0] + '\\left[' + tree.slice(1).map(printLatex).join(',') + '\\right]';
 	}

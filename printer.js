@@ -16,14 +16,18 @@ function printLatex(tree) {
 		}
 		return s;
 	case '*':
-		s = '';
-		for (i = 1; i < tree.length; i++) {
-			if (Array.isArray(tree[i]) && tree[i][0] == '+') {
-				s += '\\left(' + printLatex(tree[i]) + '\\right)';
-			} else if (tree[i] == -1) {
-				s = '-' + s;
+		var nNegatives = tree.slice(1).filter(v => v == -1).length;
+		s = nNegatives % 2 == 0 ? '' : '-';
+		var tail = tree.slice(1).filter(v => v != -1);
+		for (i = 0; i < tail.length; i++) {
+			if (Array.isArray(tail[i]) && tail[i][0] == '+') {
+				s += '\\left(' + printLatex(tail[i]) + '\\right)';
 			} else {
-				s += printLatex(tree[i]);
+				if (i > 0 && !isNaN(tail[i-1]) && !isNaN(tail[i])) {
+					s += '\\cdot' + printLatex(tail[i]);
+				} else {
+					s += printLatex(tail[i]);
+				}
 			}
 		}
 		return s;

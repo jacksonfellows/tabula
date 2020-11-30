@@ -32,6 +32,6 @@ function printLatex(tree) {
 		}
 		return s;
 	default:
-		throw 'cannot print operator: ' + tree[0];
+		return tree[0] + '\\left[' + tree.slice(1).map(printLatex).join(',') + '\\right]';
 	}
 }

@@ -1,23 +1,19 @@
 <html>
-
-<head>
-  <title>Tabula</title>
-  <link rel="stylesheet" href="mathquill/mathquill.css">
-  </link>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-  <script src="mathquill/mathquill.min.js"></script>
-  <script src="parser.js"></script>
-  <script src="matcher.js"></script>
-</head>
-
-<body>
-  <p><span style="width: 100%" id="math"></span></p>
-  <p id="parsed"></p>
-  <div id="fields"></div>
-  <button type="button" onclick="addInputBox()">new cell</button>
-  <button type="button" onclick="updateAllOutputBoxes()">evaluate all cells</button>
+  <head>
+    <title>Tabula</title>
+    <link rel="stylesheet" href="mathquill/mathquill.css"></link>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="mathquill/mathquill.min.js"></script>
+    <script src="parser.js"></script>
+    <script src="matcher.js"></script>
+    <script src="printer.js"></script>
+  </head>
+  <body>
+    <div id="fields"></div>
+    <button type="button" onclick="addInputBox()">new cell</button>
+    <button type="button" onclick="updateAllOutputBoxes()">evaluate all cells</button>
+    <p id="parsed"></p>
+  </body>
+  <script src="eval.js"></script>
 </body>
-<script src="eval.js"></script>
-</body>
-
 </html>

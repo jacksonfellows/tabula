@@ -1,6 +1,8 @@
 var MQ = MathQuill.getInterface(2);
 var maxID = -1;
-var mathFields = [];
+
+var inputs = [];
+var outputs = [];
 
 var config = {
 	spaceBehavesLikeTab: true,
@@ -12,20 +14,21 @@ var config = {
 
 function addInputBox() {
 	var id = ++maxID;
-	$("#fields").append("<p><span style=\"width: 100%\"></span></p>",
-	                    "<p id=\"O" + id + "\"></p>",
+	$("#fields").append("<p><span id=\"I" + id + "\" style=\"width: 100%\"></span></p>",
+	                    "<p><span id=\"O" + id + "\"></span></p>",
 	                    "<p><button onclick=\"updateOutputBox(" + id + ")\">evaluate cell</button></p>");
-	var mathSpan = $("span:last")[0];
-	mathFields.push(MQ.MathField(mathSpan, config));
+	var inputSpan = $("#I" + id)[0];
+	var outputSpan = $("#O" + id)[0];
+	inputs.push(MQ.MathField(inputSpan, config));
+	outputs.push(MQ.StaticMath(outputSpan, config));
 }
 
 function updateOutputBox(id) {
-	var output = document.getElementById("O" + id);
-	output.textContent = JSON.stringify(evalReplacements(parse(mathFields[id].latex())));
+	outputs[id].latex(printLatex(evalReplacements(parse(inputs[id].latex()))));
 }
 
 function updateAllOutputBoxes() {
-	for (var id = 0; id < mathFields.length; id++) {
+	for (var id = 0; id < inputs.length; id++) {
 		updateOutputBox(id);
 	}
 }

@@ -142,7 +142,9 @@ function evalReplacements(tree) {
 	var newTree = tree;
 	do {
 		tree = newTree;
-		for (var [pattern, replacement] of replacements) {
+		// newest to oldest
+		for (var i = replacements.length - 1; i >= 0; i--) {
+			var [pattern, replacement] = replacements[i];
 			newTree = findMatchAndReplace(newTree, pattern, replacement);
 		}
 	} while (!treeEquals(tree, newTree));

@@ -26,11 +26,17 @@ function match(pattern, tree) {
 			return true;
 		}
 		if (isCapture(pattern)) {
+			if (captures[captureVar(pattern)]) {
+				return match(captures[captureVar(pattern)], tree);
+			}
 			captures[captureVar(pattern)] = tree;
 			return true;
 		}
 		if (isCapture(head(pattern))) {
 			if (matchRec(tail(pattern), tail(tree))) {
+				if (captures[captureVar(head(pattern))]) {
+					return match(captures[captureVar(head(pattern))], head(tree));
+				}
 				captures[captureVar(head(pattern))] = head(tree);
 				return true;
 			}

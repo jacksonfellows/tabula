@@ -1,3 +1,13 @@
+function isConstant(tree) {
+	if (!Array.isArray(tree)) {
+		return !isNaN(tree);
+	}
+	if (['+', '*', '/', '^'].includes(tree[0])) {
+		return tree.slice(1).every(isConstant);
+	}
+	return false;
+}
+
 function printLatex(tree) {
 	if (!Array.isArray(tree)) {
 		return String(tree);
@@ -23,7 +33,7 @@ function printLatex(tree) {
 			if (Array.isArray(tail[i]) && tail[i][0] == '+') {
 				s += '\\left(' + printLatex(tail[i]) + '\\right)';
 			} else {
-				if (i > 0 && !isNaN(tail[i-1]) && !isNaN(tail[i])) {
+				if (i > 0 && isConstant(tail[i-1]) && isConstant(tail[i])) {
 					s += '\\cdot' + printLatex(tail[i]);
 				} else {
 					s += printLatex(tail[i]);

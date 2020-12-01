@@ -137,6 +137,8 @@ function expandCommand(command, arguments) {
 		return [operatorToken(']')];
 	case 'equiv':
 		return [operatorToken('equiv')];
+	case 'ln': case 'log':
+		return [literalToken(command)];
 	default:
 		throw 'unsupported command: ' + command;
 	}

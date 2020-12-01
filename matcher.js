@@ -165,7 +165,7 @@ function evalReplacements(tree) {
 	tree = flattenFlatOperators(tree);
 	if (head(tree) === 'define') {
 		replacements.push([tree[1], tree[2]]);
-		return 'stored definition';
+		return '\\text{stored definition}';
 	}
 	var newTree = tree;
 	do {

@@ -9,14 +9,14 @@ var config = {
 	leftRightIntoCmdGoes: 'up',
 	restrictMismatchedBrackets: true,
 	supSubsRequireOperand: true,
-	autoCommands: 'pi theta forall equiv'
+	autoCommands: 'pi theta forall equiv sqrt'
 };
 
 function addInputBox() {
 	var id = ++maxID;
 	$("#fields").append("<p><span id=\"I" + id + "\" style=\"width: 100%\"></span></p>",
-	                    "<p><span id=\"O" + id + "\"></span></p>",
-	                    "<p><button onclick=\"updateOutputBox(" + id + ")\">evaluate cell</button></p>");
+		"<p><span id=\"O" + id + "\"></span></p>",
+		"<p><button onclick=\"updateOutputBox(" + id + ")\">evaluate cell</button></p>");
 	var inputSpan = $("#I" + id)[0];
 	var outputSpan = $("#O" + id)[0];
 	inputs.push(MQ.MathField(inputSpan, config));

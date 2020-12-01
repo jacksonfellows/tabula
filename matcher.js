@@ -14,32 +14,6 @@ function captureVar(capture) {
 	return capture[1];
 }
 
-var orderlessOperators = {
-	'+': true,
-	'*': true
-};
-
-function* permutations(array, k) {
-	k = k || array.length;
-	if (k == 1) {
-		yield array;
-	} else {
-		for (var i = 0; i < k; i++) {
-			yield* permutations(array, k-1);
-			var tmp;
-			if (k % 2) {
-				tmp = array[0];
-				array[0] = array[k-1];
-				array[k-1] = tmp;
-			} else {
-				tmp = array[i];
-				array[i] = array[k-1];
-				array[k-1] = tmp;
-			}
-		}
-	}
-}
-
 function match(pattern, tree) {
 	function matchRec(pattern, tree) {
 		if (!Array.isArray(pattern) && !Array.isArray(tree)) {
@@ -69,15 +43,7 @@ function match(pattern, tree) {
 			return false;
 		}
 		if (matchRec(head(pattern), head(tree))) {
-			if (orderlessOperators[head(pattern)]) {
-				for (var perm of permutations(tail(tree))) {
-					if (matchRec(tail(pattern), perm)) {
-						return true;
-					}
-				}
-			} else {
-				return matchRec(tail(pattern), tail(tree));
-			}
+			return matchRec(tail(pattern), tail(tree));
 		}
 		return false;
 	}
@@ -141,11 +107,59 @@ function deepCopyTree(tree) {
 	return tree.map(deepCopyTree);
 }
 
+var orderlessOperators = {
+	'+': true,
+	'*': true
+};
+
+function* permutations(array, k) {
+	k = k || array.length;
+	if (k == 1) {
+		yield array;
+	} else {
+		for (var i = 0; i < k; i++) {
+			yield* permutations(array, k-1);
+			var tmp;
+			if (k % 2) {
+				tmp = array[0];
+				array[0] = array[k-1];
+				array[k-1] = tmp;
+			} else {
+				tmp = array[i];
+				array[i] = array[k-1];
+				array[k-1] = tmp;
+			}
+		}
+	}
+}
+
+function* treePermutations(tree) {
+	if (!Array.isArray(tree)) {
+		yield tree;
+	} else if (tree.length == 0) {
+		yield [];
+	} else if (orderlessOperators[head(tree)]) {
+		for (var newTail of permutations(tail(tree))) {
+			for (var tailPerm of treePermutations(newTail)) {
+				yield [head(tree)].concat(tailPerm);
+			}
+		}
+	} else {
+		for (var newHead of treePermutations(head(tree))) {
+			for (var tailPerm2 of treePermutations(tail(tree))) {
+				yield [newHead].concat(tailPerm2);
+			}
+		}
+	}
+}
+
 function findMatchAndReplace(tree, pattern, replacement) {
-	var matchInfo = findMatch(pattern, tree);
-	if (matchInfo) {
-		var [subtreeIndices, captures] = matchInfo;
-		return replace(tree, subtreeIndices, replacement, captures);
+	for (var treePerm of treePermutations(tree)) {
+		var matchInfo = findMatch(pattern, treePerm);
+		if (matchInfo) {
+			var [subtreeIndices, captures] = matchInfo;
+			return replace(treePerm, subtreeIndices, replacement, captures);
+		}
 	}
 	return tree;
 }

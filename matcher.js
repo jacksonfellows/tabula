@@ -1,3 +1,12 @@
+var functionAttributes = {
+	'+': ['orderless', 'flat', 'oneIdentity'],
+	'*': ['orderless', 'flat', 'oneIdentity']
+};
+
+function hasAttribute(f, attribute) {
+	return functionAttributes[f] && functionAttributes[f].includes(attribute);
+}
+
 function head(a) {
 	return a[0];
 }
@@ -107,11 +116,6 @@ function deepCopyTree(tree) {
 	return tree.map(deepCopyTree);
 }
 
-var orderlessOperators = {
-	'+': true,
-	'*': true
-};
-
 function* permutations(array, k) {
 	k = k || array.length;
 	if (k == 1) {
@@ -138,7 +142,7 @@ function* treePermutations(tree) {
 		yield tree;
 	} else if (tree.length == 0) {
 		yield [];
-	} else if (orderlessOperators[head(tree)]) {
+	} else if (hasAttribute(head(tree), 'orderless')) {
 		for (var newTail of permutations(tail(tree))) {
 			for (var tailPerm of treePermutations(newTail)) {
 				yield [head(tree)].concat(tailPerm);
@@ -180,11 +184,6 @@ function treeEquals(a, b) {
 	return false;
 }
 
-var flatOperators = {
-	'+': true,
-	'*': true
-};
-
 function flattenFlatOperators(tree) {
 	if (!Array.isArray(tree)) {
 		return tree;
@@ -192,7 +191,7 @@ function flattenFlatOperators(tree) {
 	if (tree.length == 0) {
 		return tree;
 	}
-	if (flatOperators[head(tree)]) {
+	if (hasAttribute(head(tree), 'flat')) {
 		var newTree = [head(tree)];
 		for (var i = 1; i < tree.length; i++) {
 			var subtree = flattenFlatOperators(tree[i]);

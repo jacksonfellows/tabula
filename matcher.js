@@ -1,3 +1,12 @@
+var functionAttributes = {
+	'+': ['orderless', 'flat', 'oneIdentity'],
+	'*': ['orderless', 'flat', 'oneIdentity']
+};
+
+function hasAttribute(f, attribute) {
+	return functionAttributes[f] && functionAttributes[f].includes(attribute);
+}
+
 function head(a) {
 	return a[0];
 }
@@ -110,11 +119,6 @@ function deepCopyTree(tree) {
 	return tree.map(deepCopyTree);
 }
 
-var orderlessOperators = {
-	'+': true,
-	'*': true
-};
-
 function* permutations(array, k) {
 	k = k || array.length;
 	if (k == 1) {
@@ -136,32 +140,77 @@ function* permutations(array, k) {
 	}
 }
 
-function* treePermutations(tree) {
+function* treeOrderlessPermutations(tree) {
 	if (!Array.isArray(tree)) {
 		yield tree;
 	} else if (tree.length == 0) {
 		yield [];
-	} else if (orderlessOperators[head(tree)]) {
+	} else if (hasAttribute(head(tree), 'orderless')) {
 		for (var newTail of permutations(tail(tree))) {
-			for (var tailPerm of treePermutations(newTail)) {
+			for (var tailPerm of treeOrderlessPermutations(newTail)) {
 				yield [head(tree)].concat(tailPerm);
 			}
 		}
 	} else {
-		for (var newHead of treePermutations(head(tree))) {
-			for (var tailPerm2 of treePermutations(tail(tree))) {
+		for (var newHead of treeOrderlessPermutations(head(tree))) {
+			for (var tailPerm2 of treeOrderlessPermutations(tail(tree))) {
 				yield [newHead].concat(tailPerm2);
 			}
 		}
 	}
 }
 
+function* listGroupings(args) {
+	if (args.length == 0) {
+		yield [];
+	} else {
+		for (var start of treeFlatGroupings(head(args))) {
+			for (var end of listGroupings(tail(args))) {
+				yield [start].concat(end);
+			}
+		}
+	}
+}
+
+function* treeFlatGroupings(tree) {
+	if (!Array.isArray(tree)) {
+		yield tree;
+	} else if (tree.length == 0) {
+		yield [];
+	} else if (hasAttribute(head(tree), 'flat')) {
+		var op = head(tree);
+		var args = tail(tree);
+		if (args.length == 1 && hasAttribute(op, 'oneIdentity')) {
+			yield* treeFlatGroupings(args[0]);
+		} else {
+			for (var argGroupings of listGroupings(args)) {
+				yield [op].concat(argGroupings);
+			}
+		}
+		if (!(args.length == 2 && hasAttribute(op, 'oneIdentity'))) {
+			for (var i = 1; i < args.length; i++) {
+				for (var start of treeFlatGroupings([op].concat(args.slice(0,i)))) {
+					for (var end of treeFlatGroupings([op].concat(args.slice(i)))) {
+						yield [op].concat([start].concat([end]));
+					}
+				}
+			}
+		}
+	} else {
+		for (var tailGroupings of listGroupings(tail(tree))) {
+			yield [head(tree)].concat(tailGroupings);
+		}
+	}
+}
+
 function findMatchAndReplace(tree, pattern, replacement) {
-	for (var treePerm of treePermutations(tree)) {
-		var matchInfo = findMatch(pattern, treePerm);
-		if (matchInfo) {
-			var [subtreeIndices, captures] = matchInfo;
-			return replace(treePerm, subtreeIndices, replacement, captures);
+	for (var treePerm of treeOrderlessPermutations(tree)) {
+		for (var treeGrouping of treeFlatGroupings(treePerm)) {
+			var matchInfo = findMatch(pattern, treeGrouping);
+			if (matchInfo) {
+				var [subtreeIndices, captures] = matchInfo;
+				return replace(treeGrouping, subtreeIndices, replacement, captures);
+			}
 		}
 	}
 	return tree;
@@ -183,11 +232,6 @@ function treeEquals(a, b) {
 	return false;
 }
 
-var flatOperators = {
-	'+': true,
-	'*': true
-};
-
 function flattenFlatOperators(tree) {
 	if (!Array.isArray(tree)) {
 		return tree;
@@ -195,7 +239,7 @@ function flattenFlatOperators(tree) {
 	if (tree.length == 0) {
 		return tree;
 	}
-	if (flatOperators[head(tree)]) {
+	if (hasAttribute(head(tree), 'flat')) {
 		var newTree = [head(tree)];
 		for (var i = 1; i < tree.length; i++) {
 			var subtree = flattenFlatOperators(tree[i]);

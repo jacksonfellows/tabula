@@ -90,7 +90,10 @@ function replace(tree, subtreeIndices, replacement, captures) {
 function replaceCaptures(replacement, captures) {
 	function replaceCapturesRec(replacement, captures) {
 		if (!Array.isArray(replacement)) {
-			return captures[replacement] || replacement;
+			if (captures[replacement] !== undefined) {
+				return captures[replacement];
+			}
+			return replacement;
 		}
 		for (var i = 0; i < replacement.length; i++) {
 			replacement[i] = replaceCapturesRec(replacement[i], captures);

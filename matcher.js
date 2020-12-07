@@ -251,10 +251,50 @@ function flattenFlatOperators(tree) {
 	return tree.map(flattenFlatOperators);
 }
 
+function evalConstants(tree) {
+	if (!Array.isArray(tree)) {
+		return tree;
+	}
+	if (tree.length == 0) {
+		return tree;
+	}
+	var evaledTail = tail(tree).map(evalConstants);
+	switch (head(tree)) {
+	case '+':
+		var sum = 0;
+		var remainingSum = [];
+		evaledTail.forEach(x => {
+			if (isNaN(x)) {
+				remainingSum.push(x);
+			} else {
+				sum += x;
+			}
+		});
+		return remainingSum.length == 0 ? sum : ['+', sum, ...remainingSum];
+	case '*':
+		var product = 1;
+		var remainingProduct = [];
+		evaledTail.forEach(x => {
+			if (isNaN(x)) {
+				remainingProduct.push(x);
+			} else {
+				product *= x;
+			}
+		});
+		return remainingProduct.length == 0 ? product : ['*', product, ...remainingProduct];
+	default:
+		return [head(tree)].concat(evaledTail);
+	}
+}
+
+function simplify(tree) {
+	return evalConstants(flattenFlatOperators(tree));
+}
+
 var replacements = [];
 
 function evalReplacements(tree) {
-	tree = flattenFlatOperators(tree);
+	tree = simplify(tree);
 	if (head(tree) === 'define') {
 		replacements.push([tree[1], tree[2]]);
 		return '\\text{stored definition}';
@@ -265,7 +305,7 @@ function evalReplacements(tree) {
 		// newest to oldest
 		for (var i = replacements.length - 1; i >= 0; i--) {
 			var [pattern, replacement] = replacements[i];
-			newTree = flattenFlatOperators(findMatchAndReplace(newTree, pattern, replacement));
+			newTree = simplify(findMatchAndReplace(newTree, pattern, replacement));
 		}
 	} while (!treeEquals(tree, newTree));
 	return tree;

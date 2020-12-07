@@ -270,7 +270,7 @@ function evalConstants(tree) {
 				sum += x;
 			}
 		});
-		return remainingSum.length == 0 ? sum : ['+', sum, ...remainingSum];
+		return remainingSum.length == 0 ? sum : (sum == 0 ? ['+', ...remainingSum] : ['+', sum, ...remainingSum]);
 	case '*':
 		var product = 1;
 		var remainingProduct = [];
@@ -281,9 +281,9 @@ function evalConstants(tree) {
 				product *= x;
 			}
 		});
-		return remainingProduct.length == 0 ? product : ['*', product, ...remainingProduct];
+		return remainingProduct.length == 0 ? product : (product == 1 ? ['*', ...remainingProduct] : ['*', product, ...remainingProduct]);
 	default:
-		return [head(tree)].concat(evaledTail);
+		return [head(tree), ...evaledTail];
 	}
 }
 

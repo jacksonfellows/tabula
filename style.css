@@ -1,0 +1,17 @@
+button {
+    background-color: lightblue;
+    width: 3%;
+    padding: 0% 0%;
+    margin: 0.5% 0.5%;
+    color: black;
+    border: none;
+    font-size: 100%;
+    transition-duration: 0.4s;
+    float: center;
+    cursor: pointer;
+  }
+
+button:hover {
+    background-color: black;
+    color: white;
+}

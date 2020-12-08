@@ -309,6 +309,7 @@ function evalReplacements(tree) {
 		replacements.push([tree[1], tree[2]]);
 		return '\\text{stored definition}';
 	}
+	console.time('evalReplacements');
 	var newTree;
 	var changeMade = true;
 	while (changeMade) {
@@ -323,5 +324,6 @@ function evalReplacements(tree) {
 			}
 		}
 	}
+	console.timeEnd('evalReplacements');
 	return tree;
 }

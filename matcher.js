@@ -200,9 +200,16 @@ function* treeFlatGroupings(tree) {
 	}
 }
 
+const MAX_N_TREES = 10000;
+
 function findMatchAndReplace(tree, pattern, replacement) {
+	var n = 0;
 	for (var treePerm of treeOrderlessPermutations(tree)) {
 		for (var treeGrouping of treeFlatGroupings(treePerm)) {
+			if (n++ >= MAX_N_TREES) {
+				console.log('too many trees, aborting search for pattern ' + JSON.stringify(pattern) + ' in tree ' + JSON.stringify(tree));
+				return tree;
+			}
 			var matchInfo = findMatch(pattern, treeGrouping);
 			if (matchInfo) {
 				var [subtreeIndices, captures] = matchInfo;

@@ -203,10 +203,17 @@ function* treeFlatGroupings(tree) {
 	}
 }
 
+function hasOrderlessOrFlatFunctions(tree) {
+	if (!Array.isArray(tree) || tree.length == 0) {
+		return false;
+	}
+	return hasAttribute(head(tree), 'orderless') || hasAttribute(head(tree), 'flat') || tail(tree).some(hasOrderlessOrFlatFunctions);
+}
+
 const MAX_N_TREES = 10000;
 
 function findMatchAndReplace(tree, pattern, replacement) {
-	if (Array.isArray(pattern)) {
+	if (hasOrderlessOrFlatFunctions(pattern)) {
 		let n = 0;
 		for (let treePerm of treeOrderlessPermutations(tree)) {
 			for (let treeGrouping of treeFlatGroupings(treePerm)) {

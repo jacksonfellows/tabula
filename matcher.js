@@ -206,18 +206,26 @@ function* treeFlatGroupings(tree) {
 const MAX_N_TREES = 10000;
 
 function findMatchAndReplace(tree, pattern, replacement) {
-	var n = 0;
-	for (var treePerm of treeOrderlessPermutations(tree)) {
-		for (var treeGrouping of treeFlatGroupings(treePerm)) {
-			if (n++ >= MAX_N_TREES) {
-				console.log('too many trees, aborting search for pattern ' + JSON.stringify(pattern) + ' in tree ' + JSON.stringify(tree));
-				return tree;
+	if (Array.isArray(pattern)) {
+		let n = 0;
+		for (let treePerm of treeOrderlessPermutations(tree)) {
+			for (let treeGrouping of treeFlatGroupings(treePerm)) {
+				if (n++ >= MAX_N_TREES) {
+					console.log('too many trees, aborting search for pattern ' + JSON.stringify(pattern) + ' in tree ' + JSON.stringify(tree));
+					return tree;
+				}
+				let matchInfo = findMatch(pattern, treeGrouping);
+				if (matchInfo) {
+					let [subtreeIndices, captures] = matchInfo;
+					return replace(treeGrouping, subtreeIndices, replacement, captures);
+				}
 			}
-			var matchInfo = findMatch(pattern, treeGrouping);
-			if (matchInfo) {
-				var [subtreeIndices, captures] = matchInfo;
-				return replace(treeGrouping, subtreeIndices, replacement, captures);
-			}
+		}
+	} else {
+		let matchInfo = findMatch(pattern, tree);
+		if (matchInfo) {
+			let [subtreeIndices, captures] = matchInfo;
+			return replace(tree, subtreeIndices, replacement, captures);
 		}
 	}
 	return tree;

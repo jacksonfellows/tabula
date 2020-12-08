@@ -8,14 +8,36 @@
   <script src="mathquill/mathquill.min.js"></script>
   <script src="parser.js"></script>
   <script src="matcher.js"></script>
+  <script src="printer.js"></script>
 </head>
 
 <body>
-  <p><span style="width: 100%" id="math"></span></p>
+  <style>
+    button {
+      background-color: lightblue;
+      width: 3%;
+      padding: 0% 0%;
+      margin: 0.5% 0.5%;
+      color: black;
+      border: none;
+      font-size: 100%;
+      transition-duration: 0.4s;
+      float: center;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: black;
+      color: white;
+    }
+  </style>
+  <div id="fields">
+    <hr>
+    </hr>
+  </div>
+  <button type="button" title="new cell" onclick="addInputBox()" id="newcell">+</button>
+  <button type="button" title="evaluate all cells" onclick="updateAllOutputBoxes()">►►</button>
   <p id="parsed"></p>
-  <div id="fields"></div>
-  <button type="button" onclick="addInputBox()">new cell</button>
-  <button type="button" onclick="updateAllOutputBoxes()">evaluate all cells</button>
 </body>
 <script src="eval.js"></script>
 </body>

@@ -11,12 +11,16 @@ var config = {
 };
 
 function addInputBox() {
-	var id = ++maxID
-	$("#fields").append("<p><span style=\"width: 100%\"></span></p>",
-		"<p id=\"O" + id + "\"></p>",
-		"<p><button onclick=\"updateOutputBox(" + id + ")\">evaluate cell</button></p>");
-	var mathSpan = $("span:last")[0];
-	mathFields.push(MQ.MathField(mathSpan, config));
+	var id = ++maxID;
+	$("#fields").append("<p><button title=\"evaluate cell\" onclick=\"updateOutputBox(" + id + ")\">►</button>" +
+		"<span id=\"I" + id + "\" style=\"width: 95%\"></span></p>",
+		"<p><span>⟶ </span><span id=\"O" + id + "\"></span></p>",
+		" <hr></hr>"
+	);
+	var inputSpan = $("#I" + id)[0];
+	var outputSpan = $("#O" + id)[0];
+	inputs.push(MQ.MathField(inputSpan, config).focus());
+	outputs.push(MQ.StaticMath(outputSpan, config));
 }
 
 function updateOutputBox(id) {
@@ -29,3 +33,9 @@ function updateAllOutputBoxes() {
 		updateOutputBox(id);
 	}
 }
+
+window.onbeforeunload = function (e) {
+	return 'Do you want to leave the page? Your work will not be saved.';
+};
+
+addInputBox();

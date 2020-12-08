@@ -306,14 +306,19 @@ function evalReplacements(tree) {
 		replacements.push([tree[1], tree[2]]);
 		return '\\text{stored definition}';
 	}
-	var newTree = tree;
-	do {
-		tree = newTree;
+	var newTree;
+	var changeMade = true;
+	while (changeMade) {
+		changeMade = false;
 		// newest to oldest
 		for (var i = replacements.length - 1; i >= 0; i--) {
 			var [pattern, replacement] = replacements[i];
-			newTree = simplify(findMatchAndReplace(newTree, pattern, replacement));
+			newTree = simplify(findMatchAndReplace(tree, pattern, replacement));
+			if (!treeEquals(tree, newTree)) {
+				changeMade = true;
+				tree = newTree;
+			}
 		}
-	} while (!treeEquals(tree, newTree));
+	}
 	return tree;
 }

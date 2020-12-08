@@ -26,7 +26,10 @@ function addInputBox() {
 }
 
 function updateOutputBox(id) {
-	outputs[id].latex(printLatex(evalReplacements(parse(inputs[id].latex()))));
+	if ((inputs[id].latex()) != '') {
+		outputs[id].latex(printLatex(evalReplacements(parse(inputs[id].latex()))));
+	} else { }
+
 }
 
 function updateAllOutputBoxes() {

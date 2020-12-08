@@ -1,13 +1,15 @@
 var MQ = MathQuill.getInterface(2);
-var maxID = -1
-var mathFields = [];
+var maxID = -1;
+
+var inputs = [];
+var outputs = [];
 
 var config = {
 	spaceBehavesLikeTab: true,
 	leftRightIntoCmdGoes: 'up',
 	restrictMismatchedBrackets: true,
 	supSubsRequireOperand: true,
-	autoCommands: 'pi theta forall equiv'
+	autoCommands: 'pi theta forall equiv sqrt'
 };
 
 function addInputBox() {
@@ -24,12 +26,11 @@ function addInputBox() {
 }
 
 function updateOutputBox(id) {
-	var parsed = document.getElementById("O" + id);
-	parsed.textContent = JSON.stringify(parse(mathFields[id].latex()));
+	outputs[id].latex(printLatex(evalReplacements(parse(inputs[id].latex()))));
 }
 
 function updateAllOutputBoxes() {
-	for (var id = 0; id < mathFields.length; id++) {
+	for (var id = 0; id < inputs.length; id++) {
 		updateOutputBox(id);
 	}
 }

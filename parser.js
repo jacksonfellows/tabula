@@ -137,6 +137,8 @@ function expandCommand(command, arguments) {
 		return [operatorToken(']')];
 	case 'equiv':
 		return [operatorToken('equiv')];
+	case 'ln': case 'log':
+		return [literalToken(command)];
 	default:
 		throw 'unsupported command: ' + command;
 	}
@@ -225,10 +227,10 @@ function operatorSubToken() {
 	return {
 		lbp: 10,
 		nud: function() {
-			return ['-', expression(27)];
+			return ['*', -1, expression(27)];
 		},
 		led: function(left) {
-			return ['-', left, expression(10)];
+			return ['+', left, ['*', -1, expression(10)]];
 		}
 	};
 }

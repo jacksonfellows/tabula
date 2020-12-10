@@ -41,7 +41,7 @@ function findMatchAndReplace(pattern, tree, replacement) {
 							}
 							let subtree = [head(pattern), ...perm.slice(start, end)];
 							let newTree = findMatchAndReplaceRec(pattern, subtree, replacement);
-							if (newTree) {
+							if (newTree !== null) {
 								perm.splice(start, end - start, newTree);
 								return [head(pattern), ...perm];
 							}
@@ -59,7 +59,7 @@ function findMatchAndReplace(pattern, tree, replacement) {
 						}
 						let subtree = [head(pattern), ...tree.slice(start+1, end+1)];
 						let newTree = findMatchAndReplaceRec(pattern, subtree, replacement);
-						if (newTree) {
+						if (newTree !== null) {
 							tree.splice(start + 1, end - start, newTree);
 							return tree;
 						}
@@ -70,7 +70,7 @@ function findMatchAndReplace(pattern, tree, replacement) {
 		if (Array.isArray(tree)) {
 			for (let i = 1; i < tree.length; i++) {
 				let newTree = findMatchAndReplaceRec(pattern, tree[i], replacement);
-				if (newTree) {
+				if (newTree !== null) {
 					tree[i] = newTree;
 					return tree;
 				}
@@ -80,7 +80,7 @@ function findMatchAndReplace(pattern, tree, replacement) {
 	}
 
 	let newTree = findMatchAndReplaceRec(pattern, tree, replacement);
-	return newTree ? newTree : tree;
+	return newTree !== null ? newTree : tree;
 }
 
 function replaceCaptures(replacement, captures) {

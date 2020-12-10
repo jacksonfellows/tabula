@@ -23,77 +23,64 @@ function captureVar(capture) {
 	return capture[1];
 }
 
-function match(pattern, tree) {
-	function matchRec(pattern, tree) {
-		if (!Array.isArray(pattern) && !Array.isArray(tree)) {
-			return pattern === tree;
-		}
-		if (!Array.isArray(pattern) || !Array.isArray(tree)) {
-			return false;
-		}
-		if (pattern.length == 0 && tree.length == 0) {
-			return true;
-		}
-		if (isCapture(pattern)) {
-			if (captures[captureVar(pattern)]) {
-				return matchRec(captures[captureVar(pattern)], tree);
-			}
-			captures[captureVar(pattern)] = tree;
-			return true;
-		}
-		if (isCapture(head(pattern))) {
-			if (matchRec(tail(pattern), tail(tree))) {
-				if (captures[captureVar(head(pattern))]) {
-					return matchRec(captures[captureVar(head(pattern))], head(tree));
-				}
-				captures[captureVar(head(pattern))] = head(tree);
-				return true;
-			}
-			return false;
-		}
-		if (matchRec(head(pattern), head(tree))) {
-			return matchRec(tail(pattern), tail(tree));
-		}
-		return false;
-	}
-
-	var captures = {};
-	if (matchRec(pattern, tree)) {
-		return captures;
-	}
-	return false;
-}
-
-function findMatch(pattern, tree, indices = []) {
-	var captures = match(pattern, tree);
-	if (captures) {
-		return [indices, captures];
-	}
-	if (Array.isArray(tree)) {
-		for (var i = 0; i < tree.length; i++) {
-			var m = findMatch(pattern, tree[i], indices.concat([i]));
-			if (m) {
-				return m;
-			}
-		}
-	}
-	return null;
-}
-
-function replace(tree, subtreeIndices, replacement, captures) {
-	function replaceRec(tree, subtreeIndices, replacement, captures) {
-		if (subtreeIndices.length == 0) {
+function findMatchAndReplace(pattern, tree, replacement) {
+	function findMatchAndReplaceRec(pattern, tree, replacement) {
+		for (let captures of matches(pattern, tree)) { // max 1 iteration
 			return replaceCaptures(replacement, captures);
 		}
-		for (var i = 0; i < tree.length; i++) {
-			if (i == head(subtreeIndices)) {
-				tree[i] = replaceRec(tree[i], tail(subtreeIndices), replacement, captures);
-				return tree;
+		if (Array.isArray(pattern) && Array.isArray(tree) && head(pattern) === head(tree) && hasAttribute(head(pattern), 'flat') && pattern.length < tree.length) {
+			if (hasAttribute(head(pattern), 'orderless')) {
+				for (let perm of permutations(tail(tree))) {
+					for (let start = 0; start < perm.length; start++) {
+						for (let end = start + 1; end <= perm.length; end++) {
+							if (start == 0 && end == perm.length) {
+								continue; // avoid infinite recursion
+							}
+							if (end - start == 1 && hasAttribute(head(pattern), 'oneIdentity')) {
+								continue; // will be covered later
+							}
+							let subtree = [head(pattern), ...perm.slice(start, end)];
+							let newTree = findMatchAndReplaceRec(pattern, subtree, replacement);
+							if (newTree) {
+								perm.splice(start, end - start, newTree);
+								return [head(pattern), ...perm];
+							}
+						}
+					}
+				}
+			} else {
+				for (let start = 0; start < tree.length - 1; start++) {
+					for (let end = start + 1; end <= tree.length - 1; end++) {
+						if (start == 0 && end == tree.length - 1) {
+							continue; // avoid infinite recursion
+						}
+						if (end - start == 1 && hasAttribute(head(pattern), 'oneIdentity')) {
+							continue; // will be covered later
+						}
+						let subtree = [head(pattern), ...tree.slice(start+1, end+1)];
+						let newTree = findMatchAndReplaceRec(pattern, subtree, replacement);
+						if (newTree) {
+							tree.splice(start + 1, end - start, newTree);
+							return tree;
+						}
+					}
+				}
+			}
+		}
+		if (Array.isArray(tree)) {
+			for (let i = 1; i < tree.length; i++) {
+				let newTree = findMatchAndReplaceRec(pattern, tree[i], replacement);
+				if (newTree) {
+					tree[i] = newTree;
+					return tree;
+				}
 			}
 		}
 		return null;
 	}
-	return replaceRec(deepCopyTree(tree), subtreeIndices, replacement, captures);
+
+	let newTree = findMatchAndReplaceRec(pattern, tree, replacement);
+	return newTree ? newTree : tree;
 }
 
 function replaceCaptures(replacement, captures) {
@@ -140,118 +127,66 @@ function* permutations(array, k) {
 	}
 }
 
-function* treeOrderlessPermutations(tree) {
-	if (!Array.isArray(tree)) {
-		yield tree;
-	} else if (tree.length == 0) {
-		yield [];
-	} else if (hasAttribute(head(tree), 'orderless')) {
-		for (var newTail of permutations(tail(tree))) {
-			for (var tailPerm of treeOrderlessPermutations(newTail)) {
-				yield [head(tree)].concat(tailPerm);
-			}
-		}
+function* nGroupings(array, n) {
+	if (n == 1) {
+		yield [array];
 	} else {
-		for (var newHead of treeOrderlessPermutations(head(tree))) {
-			for (var tailPerm2 of treeOrderlessPermutations(tail(tree))) {
-				yield [newHead].concat(tailPerm2);
+		for (let i = 1; i < array.length - n + 2; i++) {
+			for (let end of nGroupings(array.slice(i), n-1)) {
+				yield [array.slice(0,i)].concat(end);
 			}
 		}
 	}
 }
 
-function* listGroupings(args) {
-	if (args.length == 0) {
-		yield [];
-	} else {
-		for (var start of treeFlatGroupings(head(args))) {
-			for (var end of listGroupings(tail(args))) {
-				yield [start].concat(end);
-			}
-		}
-	}
-}
-
-function* treeFlatGroupings(tree) {
-	if (!Array.isArray(tree)) {
-		yield tree;
-	} else if (tree.length == 0) {
-		yield [];
-	} else if (hasAttribute(head(tree), 'flat')) {
-		var op = head(tree);
-		var args = tail(tree);
-		if (args.length == 1 && hasAttribute(op, 'oneIdentity')) {
-			yield* treeFlatGroupings(args[0]);
+function* listMatches(patternList, treeList, captures) {
+	if (patternList.length == treeList.length) {
+		if (patternList.length == 0) {
+			yield captures;
 		} else {
-			for (var argGroupings of listGroupings(args)) {
-				yield [op].concat(argGroupings);
+			for (let newCaptures of matches(head(patternList), head(treeList), captures)) {
+				yield* listMatches(tail(patternList), tail(treeList), newCaptures);
 			}
 		}
-		if (!(args.length == 2 && hasAttribute(op, 'oneIdentity'))) {
-			for (var i = 1; i < args.length; i++) {
-				for (var start of treeFlatGroupings([op].concat(args.slice(0,i)))) {
-					for (var end of treeFlatGroupings([op].concat(args.slice(i)))) {
-						yield [op].concat([start].concat([end]));
+	}
+}
+
+function* matches(pattern, tree, captures = {}) {
+	if (!Array.isArray(pattern) && !Array.isArray(tree)) {
+		if (pattern === tree)
+			yield captures;
+	} else if (isCapture(pattern)) {
+		if (captures[captureVar(pattern)]) {
+			if (!matches(captures[captureVar(pattern)], tree, captures).next().done)
+				yield captures;
+		} else {
+			yield Object.assign({[captureVar(pattern)]: tree}, captures);
+		}
+	} else if (head(pattern) === head(tree)) {
+		if (pattern.length == tree.length) { // need to be the same length to match this way
+			if (hasAttribute(head(pattern), 'orderless')) {
+				for (let treeTailOrder of permutations(tail(tree))) {
+					yield* listMatches(tail(pattern), treeTailOrder, captures);
+				}
+			} else {
+				yield* listMatches(tail(pattern), tail(tree), captures);
+			}
+		} else if (pattern.length < tree.length && hasAttribute(head(pattern), 'flat')) {
+			if (hasAttribute(head(pattern), 'orderless')) {
+				for (let perm of permutations(tail(tree))) {
+					for (let tailGrouping of nGroupings(perm, pattern.length - 1)) {
+						tailGrouping = tailGrouping.map(x => x.length == 1 && hasAttribute(head(pattern), 'oneIdentity') ? x[0] : [head(pattern), ...x]);
+						yield* listMatches(tail(pattern), tailGrouping, captures);
 					}
 				}
-			}
-		}
-	} else {
-		for (var tailGroupings of listGroupings(tail(tree))) {
-			yield [head(tree)].concat(tailGroupings);
-		}
-	}
-}
-
-function hasOrderlessOrFlatFunctions(tree) {
-	if (!Array.isArray(tree) || tree.length == 0) {
-		return false;
-	}
-	return hasAttribute(head(tree), 'orderless') || hasAttribute(head(tree), 'flat') || tail(tree).some(hasOrderlessOrFlatFunctions);
-}
-
-const MAX_N_TREES = 10000;
-
-function findMatchAndReplace(tree, pattern, replacement) {
-	if (hasOrderlessOrFlatFunctions(pattern)) {
-		let n = 0;
-		for (let treePerm of treeOrderlessPermutations(tree)) {
-			for (let treeGrouping of treeFlatGroupings(treePerm)) {
-				if (n++ >= MAX_N_TREES) {
-					console.log('too many trees, aborting search for pattern ' + JSON.stringify(pattern) + ' in tree ' + JSON.stringify(tree));
-					return tree;
-				}
-				let matchInfo = findMatch(pattern, treeGrouping);
-				if (matchInfo) {
-					let [subtreeIndices, captures] = matchInfo;
-					return replace(treeGrouping, subtreeIndices, replacement, captures);
+			} else {
+				for (let tailGrouping of nGroupings(tail(tree), pattern.length - 1)) {
+					tailGrouping = tailGrouping.map(x => x.length == 1 && hasAttribute(head(pattern), 'oneIdentity') ? x[0] : [head(pattern), ...x]);
+					yield* listMatches(tail(pattern), tailGrouping, captures);
 				}
 			}
 		}
-	} else {
-		let matchInfo = findMatch(pattern, tree);
-		if (matchInfo) {
-			let [subtreeIndices, captures] = matchInfo;
-			return replace(tree, subtreeIndices, replacement, captures);
-		}
 	}
-	return tree;
-}
-
-function treeEquals(a, b) {
-	if (!Array.isArray(a) && !Array.isArray(b)) {
-		return a === b;
-	}
-	if (Array.isArray(a) && Array.isArray(b)) {
-		if (a.length != b.length) {
-			return false;
-		}
-		if (a.length == 0 && b.length == 0) {
-			return true;
-		}
-		return treeEquals(head(a), head(b)) && treeEquals(tail(a), tail(b));
-	}
-	return false;
 }
 
 function flattenFlatOperators(tree) {
@@ -316,6 +251,22 @@ function simplify(tree) {
 	return evalConstants(flattenFlatOperators(tree));
 }
 
+function treeEquals(a, b) {
+	if (!Array.isArray(a) && !Array.isArray(b)) {
+		return a === b;
+	}
+	if (Array.isArray(a) && Array.isArray(b)) {
+		if (a.length != b.length) {
+			return false;
+		}
+		if (a.length == 0 && b.length == 0) {
+			return true;
+		}
+		return treeEquals(head(a), head(b)) && treeEquals(tail(a), tail(b));
+	}
+	return false;
+}
+
 var replacements = [];
 
 function evalReplacements(tree) {
@@ -332,7 +283,7 @@ function evalReplacements(tree) {
 		// newest to oldest
 		for (var i = replacements.length - 1; i >= 0; i--) {
 			var [pattern, replacement] = replacements[i];
-			newTree = simplify(findMatchAndReplace(tree, pattern, replacement));
+			newTree = simplify(findMatchAndReplace(pattern, tree, replacement));
 			if (!treeEquals(tree, newTree)) {
 				changeMade = true;
 				tree = newTree;

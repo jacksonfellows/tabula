@@ -230,6 +230,7 @@ function evalConstants(tree) {
 				sum += x;
 			}
 		});
+		remainingSum.sort();
 		return remainingSum.length == 0 ? sum : (sum == 0 ? ['+', ...remainingSum] : ['+', sum, ...remainingSum]);
 	case '*':
 		var product = 1;
@@ -241,6 +242,7 @@ function evalConstants(tree) {
 				product *= x;
 			}
 		});
+		remainingProduct.sort();
 		return remainingProduct.length == 0 ? product : (product == 1 ? ['*', ...remainingProduct] : ['*', product, ...remainingProduct]);
 	default:
 		return [head(tree), ...evaledTail];

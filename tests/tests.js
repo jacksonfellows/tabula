@@ -60,8 +60,13 @@ var n_passed = 0;
 for (var notebook of TESTS) {
     for (var cell of notebook) {
         var expect_in = cell['in'];
-        var expect_out = cell['out'];
-        var actual_out = printLatex(evalReplacements(parse(expect_in)));
+	    var expect_out = cell['out'];
+	    var actual_out;
+	    try {
+		    actual_out = printLatex(evalReplacements(parse(expect_in)));
+	    } catch(err) {
+		    actual_out = '\\text{' + err + '}';
+	    }
         var passed = expect_out == actual_out;
 
         $("#fields").append("<p><span></span></p>");

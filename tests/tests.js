@@ -36,8 +36,26 @@ const TESTS = [
             "in": "a+b",
             "out": "3"
         }
+    ],
+    [
+        {
+            "in": "5^2",
+            "out": "25"
+        },
+        {
+            "in": "1^{2^2}",
+            "out": "1"
+        },
+        {
+            "in": "2^2",
+            "out": "4"
+        }
     ]
 ];
+
+
+var n_failed = 0;
+var n_passed = 0;
 
 for (var i in TESTS) {
     var notebook = TESTS[i];
@@ -45,19 +63,20 @@ for (var i in TESTS) {
         var expect_in = notebook[a]['in'];
         var expect_out = notebook[a]['out'];
         var actual_out = printLatex(evalReplacements(parse(expect_in)));
+        var passed = expect_out == actual_out;
 
         $("#fields").append("<p><span></span></p>");
         MQ.StaticMath($("p span").last()[0], config).latex(expect_in);
 
-        $("#fields").append("<p><span></span></p>");
+        $("#fields").append(`<p class = "${passed ? 'passed' : 'failed'}"><span></span></p>`);
         MQ.StaticMath($("p span").last()[0], config).latex(actual_out);
 
-        if (expect_out == actual_out) {
-            $("p span").last().css("background-color", "green");
+        if (passed) {
+            n_passed++;
         } else {
-            $("p span").last().css("background-color", "red");
             $("#fields").append("<p>Expected value:</p><p><span></span></p>");
             MQ.StaticMath($("p span").last()[0], config).latex(expect_out);
+            n_failed++;
         }
 
         $("#fields").append("<hr></hr>");
@@ -66,3 +85,5 @@ for (var i in TESTS) {
     $("#fields").append("<br></br><br></br>");
     replacements = []
 }
+
+$('#report').text(`${n_passed} out of ${n_failed + n_passed} tests passed`).addClass(n_failed == 0 ? 'passed' : 'failed');

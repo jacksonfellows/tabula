@@ -44,17 +44,20 @@ for (var i in TESTS) {
     for (var a in notebook) {
         var expect_in = notebook[a]['in'];
         var expect_out = notebook[a]['out'];
+        var actual_out = printLatex(evalReplacements(parse(expect_in)));
 
         $("#fields").append("<p><span></span></p>");
         MQ.StaticMath($("p span").last()[0], config).latex(expect_in);
 
         $("#fields").append("<p><span></span></p>");
-        MQ.StaticMath($("p span").last()[0], config).latex(expect_out);
+        MQ.StaticMath($("p span").last()[0], config).latex(actual_out);
 
-        if (expect_out == printLatex(evalReplacements(parse(expect_in)))) {
+        if (expect_out == actual_out) {
             $("p span").last().css("background-color", "green");
         } else {
             $("p span").last().css("background-color", "red");
+            $("#fields").append("<p>Expected value:</p><p><span></span></p>");
+            MQ.StaticMath($("p span").last()[0], config).latex(expect_out);
         }
 
         $("#fields").append("<hr></hr>");

@@ -244,6 +244,10 @@ function evalConstants(tree) {
 		});
 		remainingProduct.sort();
 		return remainingProduct.length == 0 ? product : (product == 1 ? ['*', ...remainingProduct] : ['*', product, ...remainingProduct]);
+	case '^':
+		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1])) {
+			return evaledTail[0] ** evaledTail[1];
+		}
 	default:
 		return [head(tree), ...evaledTail];
 	}

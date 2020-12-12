@@ -50,7 +50,13 @@ const TESTS = [
             "in": "2^2",
             "out": "4"
         }
-    ]
+    ],
+	[
+		{
+			"in": "\\frac{a}{b}^2",
+			"out": "\\left(\\frac{a}{b}\\right)^2"
+		}
+	],
 ];
 
 
@@ -86,8 +92,8 @@ for (var notebook of TESTS) {
         $("#fields").append("<hr></hr>");
 
     }
-    $("#fields").append("<br></br><br></br>");
-    replacements = [];
+	$("#fields").append("<br></br><br></br>");
+	replacements = [];
 }
 
 $('#report').text(`${n_passed} out of ${n_failed + n_passed} tests passed`).addClass(n_failed == 0 ? 'passed' : 'failed');

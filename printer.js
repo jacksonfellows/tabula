@@ -48,7 +48,7 @@ function printLatex(tree) {
 		if (JSON.stringify(tree[2]) === JSON.stringify(['/', 1, 2])) {
 			return '\\sqrt{' + printLatex(tree[1]) + '}';
 		}
-		return (Array.isArray(tree[1]) ? '\\left(' + printLatex(tree[1]) + '\\right)' : printLatex(tree[1])) + '^' + '{' + printLatex(tree[2]) + '}';
+		return (Array.isArray(tree[1]) ? '\\left(' + printLatex(tree[1]) + '\\right)' : printLatex(tree[1])) + '^' + (Array.isArray(tree[2]) ? '{' + printLatex(tree[2]) + '}' : printLatex(tree[2]));
 	default:
 		return tree[0] + '\\left[' + tree.slice(1).map(printLatex).join(',') + '\\right]';
 	}

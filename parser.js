@@ -249,7 +249,7 @@ function operatorDivToken() {
 	return {
 		lbp: 25,
 		led: function(left) {
-			return ['/', left, expression(25)];
+			return ['/', left, expression(35)];
 		}
 	};
 }

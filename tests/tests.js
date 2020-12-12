@@ -57,11 +57,10 @@ const TESTS = [
 var n_failed = 0;
 var n_passed = 0;
 
-for (var i in TESTS) {
-    var notebook = TESTS[i];
-    for (var a in notebook) {
-        var expect_in = notebook[a]['in'];
-        var expect_out = notebook[a]['out'];
+for (var notebook of TESTS) {
+    for (var cell of notebook) {
+        var expect_in = cell['in'];
+        var expect_out = cell['out'];
         var actual_out = printLatex(evalReplacements(parse(expect_in)));
         var passed = expect_out == actual_out;
 
@@ -83,7 +82,7 @@ for (var i in TESTS) {
 
     }
     $("#fields").append("<br></br><br></br>");
-    replacements = []
+    replacements = [];
 }
 
 $('#report').text(`${n_passed} out of ${n_failed + n_passed} tests passed`).addClass(n_failed == 0 ? 'passed' : 'failed');

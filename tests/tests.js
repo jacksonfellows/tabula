@@ -67,7 +67,7 @@ for (var notebook of TESTS) {
 	    } catch(err) {
 		    actual_out = '\\text{' + err + '}';
 	    }
-        var passed = expect_out == actual_out;
+        var passed = expect_out === actual_out;
 
         $("#fields").append("<p><span></span></p>");
         MQ.StaticMath($("p span").last()[0], config).latex(expect_in);

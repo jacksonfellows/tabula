@@ -10,7 +10,7 @@ function isConstant(tree) {
 
 function printLatex(tree) {
 	if (!Array.isArray(tree)) {
-		return String(tree);
+		return tree === true ? '\\text{true}' : (tree === false ? '\\text{false}' : String(tree));
 	}
 	var s, i;
 	switch (tree[0]) {
@@ -49,6 +49,8 @@ function printLatex(tree) {
 			return '\\sqrt{' + printLatex(tree[1]) + '}';
 		}
 		return (Array.isArray(tree[1]) ? '\\left(' + printLatex(tree[1]) + '\\right)' : printLatex(tree[1])) + '^' + (Array.isArray(tree[2]) ? '{' + printLatex(tree[2]) + '}' : printLatex(tree[2]));
+	case '=': case '!=': case '>': case '>=': case '<': case '<=':
+		return printLatex(tree[1]) + {'=': '=', '!=': '\\ne ', '>': '>', '>=': '\\ge ', '<': '<', '<=': '\\le '}[tree[0]] + printLatex(tree[2]);
 	default:
 		return '\\text{' + tree[0] + '}\\left[' + tree.slice(1).map(printLatex).join(',') + '\\right]';
 	}

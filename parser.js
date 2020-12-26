@@ -139,6 +139,8 @@ function expandCommand(command, arguments) {
 		return [operatorToken('equiv')];
 	case 'ln': case 'log':
 		return [literalToken(command)];
+	case '=': case 'ne': case '>': case 'ge': case '<': case 'le':
+		return [operatorToken({'=': '=', 'ne': '!=', '>': '>', 'ge': '>=', '<': '<', 'le': '<='}[command])];
 	default:
 		throw 'unsupported command: ' + command;
 	}
@@ -209,6 +211,8 @@ function operatorToken(op) {
 		return operatorCommaToken();
 	case 'equiv':
 		return operatorEquivToken();
+	case '=': case '!=': case '>': case '>=': case '<': case '<=':
+		return operatorCompToken(op);
 	default:
 		throw 'unsupported operator: ' + op;
 	}
@@ -327,6 +331,18 @@ function operatorEquivToken() {
 		lbp: 5,
 		led: function(left) {
 			return ['define', left, expression(5)];
+		}
+	};
+}
+
+function operatorCompToken(comp) {
+	return {
+		lbp: 7,
+		led: function(left) {
+			if (Array.isArray(left) && ['=', '!=', '>', '>=', '<', '<='].includes(left[0])) {
+				throw 'cannot chain comparisons';
+			}
+			return [comp, left, expression(7)];
 		}
 	};
 }

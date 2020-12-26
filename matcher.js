@@ -275,6 +275,28 @@ function evalConstants(tree) {
 		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1])) {
 			return evaledTail[0] ** evaledTail[1];
 		}
+	case '=':
+		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+			return evaledTail[0] === evaledTail[1];
+		if (treeEquals(evaledTail[0], evaledTail[1]))
+			return true;
+	case '!=':
+		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+			return evaledTail[0] !== evaledTail[1];
+		if (treeEquals(evaledTail[0], evaledTail[1]))
+			return false;
+	case '>':
+		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+			return evaledTail[0] > evaledTail[1];
+	case '>=':
+		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+			return evaledTail[0] >= evaledTail[1];
+	case '<':
+		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+			return evaledTail[0] < evaledTail[1];
+	case '<=':
+		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+			return evaledTail[0] <= evaledTail[1];
 	default:
 		return [head(tree), ...evaledTail];
 	}

@@ -66,6 +66,12 @@ const TESTS = [
 			"in": "\\ln \\left[\\frac{x}{y}\\right]",
 			"out": "\\ln \\left[x\\right]-\\ln \\left[y\\right]"
 		}
+	],
+	[
+		{
+			"in": "b+ca",
+			"out": "ac+b"
+		}
 	]
 ];
 

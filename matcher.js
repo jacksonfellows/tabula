@@ -306,6 +306,30 @@ function simplify(tree) {
 	return evalConstants(flattenFlatOperators(tree));
 }
 
+function treeFree(tree, subtree) {
+	if (treeEquals(tree, subtree))
+		return false;
+	if (!Array.isArray(tree))
+		return true;
+	return tail(tree).every(sub => treeFree(sub, subtree));
+}
+
+function evalFunctions(tree) {
+	if (!Array.isArray(tree)) {
+		return tree;
+	}
+	if (tree.length == 0) {
+		return tree;
+	}
+	var evaledTail = tail(tree).map(evalFunctions);
+	switch (head(tree)) {
+	case 'free':
+		return treeFree(evaledTail[0], evaledTail[1]);
+	default:
+		return [head(tree), ...evaledTail];
+	}
+}
+
 function treeEquals(a, b) {
 	if (!Array.isArray(a) && !Array.isArray(b)) {
 		return a === b;
@@ -324,13 +348,7 @@ function treeEquals(a, b) {
 
 var replacements = [];
 
-function evalReplacements(tree) {
-	tree = simplify(tree);
-	if (head(tree) === 'define') {
-		replacements.push([tree[1], tree[2]]);
-		return '\\text{stored definition}';
-	}
-	console.time('evalReplacements');
+function evalToFixedPoint(tree) {
 	var newTree;
 	var changeMade = true;
 	while (changeMade) {
@@ -343,6 +361,27 @@ function evalReplacements(tree) {
 				changeMade = true;
 				tree = newTree;
 			}
+		}
+	}
+	return tree;
+}
+
+function evalReplacements(tree) {
+	tree = simplify(tree);
+	if (head(tree) === 'define') {
+		replacements.push([tree[1], tree[2]]);
+		return '\\text{stored definition}';
+	}
+	console.time('evalReplacements');
+	let newTree;
+	let changeMade = true;
+	while (changeMade) {
+		changeMade = false;
+		tree = evalToFixedPoint(tree);
+		newTree = evalFunctions(tree);
+		if (!treeEquals(tree, newTree)) {
+			changeMade = true;
+			tree = newTree;
 		}
 	}
 	console.timeEnd('evalReplacements');

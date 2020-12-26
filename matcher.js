@@ -211,6 +211,26 @@ function flattenFlatOperators(tree) {
 	return tree.map(flattenFlatOperators);
 }
 
+function treeValue(tree) {
+	if (!Array.isArray(tree)) {
+		return tree;
+	} else {
+		return tail(tree).map(treeValue).reduce((a,b) => a > b ? a : b);
+	}
+}
+
+function makeComparator(f) {
+	return (a,b) => {
+		let x = f(a);
+		let y = f(b);
+		return x === y ? 0 : (x > y ? 1 : -1);
+	};
+}
+
+function sortTrees(trees) {
+	trees.sort(makeComparator(treeValue));
+}
+
 function evalConstants(tree) {
 	if (!Array.isArray(tree)) {
 		return tree;
@@ -230,7 +250,7 @@ function evalConstants(tree) {
 				sum += x;
 			}
 		});
-		remainingSum.sort();
+		sortTrees(remainingSum);
 		return remainingSum.length == 0 ? sum : (sum == 0 ? ['+', ...remainingSum] : ['+', sum, ...remainingSum]);
 	case '*':
 		var product = 1;
@@ -242,7 +262,7 @@ function evalConstants(tree) {
 				product *= x;
 			}
 		});
-		remainingProduct.sort();
+		sortTrees(remainingProduct);
 		return remainingProduct.length == 0 ? product : (product == 1 ? ['*', ...remainingProduct] : ['*', product, ...remainingProduct]);
 	case '^':
 		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1])) {

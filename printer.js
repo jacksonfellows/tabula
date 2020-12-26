@@ -50,6 +50,6 @@ function printLatex(tree) {
 		}
 		return (Array.isArray(tree[1]) ? '\\left(' + printLatex(tree[1]) + '\\right)' : printLatex(tree[1])) + '^' + (Array.isArray(tree[2]) ? '{' + printLatex(tree[2]) + '}' : printLatex(tree[2]));
 	default:
-		return tree[0] + '\\left[' + tree.slice(1).map(printLatex).join(',') + '\\right]';
+		return '\\text{' + tree[0] + '}\\left[' + tree.slice(1).map(printLatex).join(',') + '\\right]';
 	}
 }

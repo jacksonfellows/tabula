@@ -57,6 +57,16 @@ const TESTS = [
 			"out": "\\left(\\frac{a}{b}\\right)^2"
 		}
 	],
+	[
+		{
+			"in": "\\ln \\left[\\frac{a.}{b.}\\right]\\equiv \\ln \\left[a\\right]-\\ln \\left[b\\right]",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "\\ln \\left[\\frac{x}{y}\\right]",
+			"out": "\\ln \\left[x\\right]-\\ln \\left[y\\right]"
+		}
+	]
 ];
 
 
@@ -73,7 +83,7 @@ for (var notebook of TESTS) {
 	    } catch(err) {
 		    actual_out = '\\text{' + err + '}';
 	    }
-        var passed = expect_out === actual_out;
+	    var passed = treeEquals(parse(expect_out), parse(actual_out));
 
         $("#fields").append("<p><span></span></p>");
         MQ.StaticMath($("p span").last()[0], config).latex(expect_in);

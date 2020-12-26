@@ -72,6 +72,20 @@ const TESTS = [
 			"in": "b+ca",
 			"out": "ac+b"
 		}
+	],
+	[
+		{
+			"in": "a.-a.\\equiv0",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "\\text{free}\\left[x-x,x\\right]",
+			"out": "\\text{true}"
+		},
+		{
+			"in": "\\text{free}\\left[x+x,x\\right]",
+			"out": "\\text{false}"
+		}
 	]
 ];
 

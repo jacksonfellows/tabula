@@ -215,6 +215,13 @@ function treeValue(tree) {
 	if (!Array.isArray(tree)) {
 		return tree;
 	} else {
+		if (['+', '*'].includes(head(tree))) {
+			for (let i = 1; i < tree.length; i++) {
+				let val = treeValue(tree[i]);
+				if (isNaN(val))
+					return val;
+			}
+		}
 		return treeValue(tree[1]);
 	}
 }

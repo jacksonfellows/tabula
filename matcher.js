@@ -215,7 +215,7 @@ function treeValue(tree) {
 	if (!Array.isArray(tree)) {
 		return tree;
 	} else {
-		return tail(tree).map(treeValue).reduce((a,b) => a < b ? a : b);
+		return treeValue(tree[1]);
 	}
 }
 

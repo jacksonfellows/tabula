@@ -240,6 +240,10 @@ function sortTrees(trees) {
 	trees.sort(makeComparator(treeValue));
 }
 
+function gcd(a, b) {
+	return b == 0 ? a : gcd(b, a % b);
+}
+
 function evalConstants(tree) {
 	if (!Array.isArray(tree)) {
 		return tree;
@@ -273,6 +277,13 @@ function evalConstants(tree) {
 		});
 		sortTrees(remainingProduct);
 		return remainingProduct.length == 0 ? product : (product == 1 ? ['*', ...remainingProduct] : ['*', product, ...remainingProduct]);
+	case '/':
+		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1])) {
+			let x = gcd(evaledTail[0], evaledTail[1]);
+			let n = evaledTail[0] / x;
+			let d = evaledTail[1] / x;
+			return d == 1 ? n : ['/', n, d];
+		}
 	case '^':
 		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1])) {
 			return evaledTail[0] ** evaledTail[1];

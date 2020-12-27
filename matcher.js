@@ -277,6 +277,8 @@ function evalConstants(tree) {
 		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1])) {
 			return evaledTail[0] ** evaledTail[1];
 		}
+		if (evaledTail[1] == 1)
+			return evaledTail[0];
 	case '=':
 		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
 			return evaledTail[0] === evaledTail[1];

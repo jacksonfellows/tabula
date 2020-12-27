@@ -69,7 +69,7 @@ function findMatchAndReplace(pattern, tree, replacement, cond) {
 		}
 		if (Array.isArray(tree)) {
 			for (let i = 1; i < tree.length; i++) {
-				let newTree = findMatchAndReplaceRec(pattern, tree[i], replacement);
+				let newTree = findMatchAndReplaceRec(pattern, tree[i], replacement, cond);
 				if (newTree !== null) {
 					tree[i] = newTree;
 					return tree;

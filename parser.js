@@ -141,6 +141,8 @@ function expandCommand(command, arguments) {
 		return [literalToken(command)];
 	case '=': case 'ne': case '>': case 'ge': case '<': case 'le':
 		return [operatorToken({'=': '=', 'ne': '!=', '>': '>', 'ge': '>=', '<': '<', 'le': '<='}[command])];
+	case 'forall':
+		return [operatorToken(command)];
 	default:
 		throw 'unsupported command: ' + command;
 	}
@@ -213,6 +215,8 @@ function operatorToken(op) {
 		return operatorEquivToken();
 	case '=': case '!=': case '>': case '>=': case '<': case '<=':
 		return operatorCompToken(op);
+	case 'forall':
+		return operatorForallToken();
 	default:
 		throw 'unsupported operator: ' + op;
 	}
@@ -330,7 +334,19 @@ function operatorEquivToken() {
 	return {
 		lbp: 5,
 		led: function(left) {
-			return ['define', left, expression(5)];
+			let right = expression(5);
+			if (right[0] === 'forall')
+				return ['define', left, right[1], right[2]];
+			return ['define', left, right];
+		}
+	};
+}
+
+function operatorForallToken() {
+	return {
+		lbp: 6,
+		led: function(left) {
+			return ['forall', left, expression(6)];
 		}
 	};
 }

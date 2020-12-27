@@ -9,48 +9,48 @@ var config = {
 };
 
 const TESTS = [
-    [
-        {
-            "in": "a.-a.\\equiv 0",
-            "out": "\\text{stored definition}"
-        },
-        {
-            "in": "b-b",
-            "out": "0"
-        },
-        {
-            "in": "\\left(a^2+6\\right)-\\left(6+a^2\\right)",
-            "out": "0"
-        }
-    ],
-    [
-        {
-            "in": "a\\equiv 1",
-            "out": "\\text{stored definition}"
-        },
-        {
-            "in": "b\\equiv 2",
-            "out": "\\text{stored definition}"
-        },
-        {
-            "in": "a+b",
-            "out": "3"
-        }
-    ],
-    [
-        {
-            "in": "5^2",
-            "out": "25"
-        },
-        {
-            "in": "1^{2^2}",
-            "out": "1"
-        },
-        {
-            "in": "2^2",
-            "out": "4"
-        }
-    ],
+	[
+		{
+			"in": "a.-a.\\equiv 0",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "b-b",
+			"out": "0"
+		},
+		{
+			"in": "\\left(a^2+6\\right)-\\left(6+a^2\\right)",
+			"out": "0"
+		}
+	],
+	[
+		{
+			"in": "a\\equiv 1",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "b\\equiv 2",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "a+b",
+			"out": "3"
+		}
+	],
+	[
+		{
+			"in": "5^2",
+			"out": "25"
+		},
+		{
+			"in": "1^{2^2}",
+			"out": "1"
+		},
+		{
+			"in": "2^2",
+			"out": "4"
+		}
+	],
 	[
 		{
 			"in": "\\frac{a}{b}^2",
@@ -85,6 +85,24 @@ const TESTS = [
 		{
 			"in": "\\text{free}\\left[x+x,x\\right]",
 			"out": "\\text{false}"
+		}
+	],
+	[
+		{
+			"in": "d\\left[c.y.,x.\\right]\\equiv cd\\left[y,x\\right]\\forall\\text{free}\\left[c,x\\right]",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "d\\left[x.,x.\\right]\\equiv1",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "d\\left[y.^{n.},x.\\right]\\equiv d\\left[y,x\\right]\\cdot n\\cdot y^{n-1}\\forall\\text{free}\\left[n,x\\right]",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "d\\left[2x^5,x\\right]",
+			"out": "10x^4"
 		}
 	]
 ];

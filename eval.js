@@ -32,3 +32,14 @@ function updateAllOutputBoxes() {
 		updateOutputBox(id);
 	}
 }
+
+function printRegressionTest() {
+	let testCase = [];
+	for (let i = 0; i < inputs.length; i++) {
+		testCase.push({
+			"in": inputs[i].latex(),
+			"out": outputs[i].latex()
+		});
+	}
+	console.log(JSON.stringify(testCase, null, '\t'));
+}

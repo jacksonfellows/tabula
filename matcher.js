@@ -264,7 +264,7 @@ function evalConstants(tree) {
 			}
 		});
 		sortTrees(remainingSum);
-		return remainingSum.length == 0 ? sum : (sum == 0 ? ['+', ...remainingSum] : ['+', sum, ...remainingSum]);
+		return remainingSum.length == 0 ? sum : (sum == 0 ? (remainingSum.length == 1 ? remainingSum[0] : ['+', ...remainingSum]) : ['+', sum, ...remainingSum]);
 	case '*':
 		var product = 1;
 		var remainingProduct = [];
@@ -276,7 +276,7 @@ function evalConstants(tree) {
 			}
 		});
 		sortTrees(remainingProduct);
-		return remainingProduct.length == 0 ? product : (product == 1 ? ['*', ...remainingProduct] : ['*', product, ...remainingProduct]);
+		return remainingProduct.length == 0 ? product : (product == 1 ? (remainingProduct.length == 1 ? remainingProduct[0] : ['*', ...remainingProduct]) : ['*', product, ...remainingProduct]);
 	case '/':
 		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1])) {
 			let x = gcd(evaledTail[0], evaledTail[1]);
@@ -381,29 +381,6 @@ function evalToFixedPoint(tree) {
 	return tree;
 }
 
-function evalReplacements(tree) {
-	tree = simplify(tree);
-	if (head(tree) === 'define') {
-		replacements.push([tree[1], tree[2], tree[3]]);
-		return '\\text{stored definition}';
-	}
-	let timeString = 'evalReplacements(' + JSON.stringify(tree) + ')';
-	console.time(timeString);
-	let newTree;
-	let changeMade = true;
-	while (changeMade) {
-		changeMade = false;
-		tree = evalToFixedPoint(tree);
-		newTree = evalFunctions(tree);
-		if (!treeEquals(tree, newTree)) {
-			changeMade = true;
-			tree = newTree;
-		}
-	}
-	console.timeEnd(timeString);
-	return tree;
-}
-
 function findFirstOptional(tree, indices = []) {
 	if (!Array.isArray(tree)) {
 		return null;
@@ -423,7 +400,7 @@ function setIndex(tree, value, indices) {
 	if (indices.length == 1) {
 		tree.splice(indices[0], 1, value);
 	} else {
-		setIndex(tail(tree), value, tail(indices));
+		setIndex(tree[indices[0]], value, tail(indices));
 	}
 }
 
@@ -434,7 +411,7 @@ function treeAt(tree, indices) {
 	if (indices.length == 1) {
 		return tree[indices[0]];
 	}
-	return treeAt(tail(tree), tail(indices));
+	return treeAt(tree[indices[0]], tail(indices));
 }
 
 function getDefault(tree, parentIndices, childIndex) {
@@ -460,17 +437,58 @@ function expandOptionals(pattern, replacement, cond) {
 		return [[pattern, replacement, cond]];
 	}
 	let samePattern = deepCopyTree(pattern);
-	setIndex(samePattern,
-		tail(treeAt(samePattern, indices))[0],
-		indices
-	);
+	setIndex(samePattern, treeAt(samePattern, indices)[1], indices);
 
 	let defaultPattern = deepCopyTree(pattern);
 	let defaultReplacement = deepCopyTree(replacement);
-	let toReplace = tail(treeAt(defaultPattern, indices));
-	let defaultNum = getDefault(defaultPattern, indices.slice(0, -1), indices[indices.length - 1]);
-	defaultReplacement = replaceCaptures(defaultReplacement, { [toReplace]: defaultNum });
-	setIndex(defaultPattern, defaultNum, indices);
+	let toReplace = treeAt(defaultPattern, indices)[1];
+	let defaultVal = getDefault(defaultPattern, indices.slice(0, -1), indices[indices.length - 1]);
 
-	return expandOptionals(samePattern, replacement, cond).concat(expandOptionals(defaultPattern, defaultReplacement, cond));
+	if (isCapture(toReplace)) {
+		toReplace = toReplace[1];
+		if (Array.isArray(toReplace)) {
+			if (head(treeAt(defaultPattern, indices.slice(0, -1))) === head(toReplace)) {
+				let captures = {};
+				for (let i = 1; i < toReplace.length; i++)
+					captures[toReplace[i]] = defaultVal;
+				defaultReplacement = replaceCaptures(defaultReplacement, captures);
+			} else {
+				throw 'invalid optional - subexpression of this type not supported';
+			}
+		} else {
+			defaultReplacement = replaceCaptures(defaultReplacement, { [toReplace]: defaultVal });
+		}
+	}
+
+	setIndex(defaultPattern, defaultVal, indices);
+
+	return expandOptionals(defaultPattern, defaultReplacement, cond).concat(expandOptionals(samePattern, replacement, cond));
+}
+
+
+function evalReplacements(tree) {
+	tree = simplify(tree);
+	if (head(tree) === 'define') {
+		for (let newReplacement of expandOptionals(tree[1], tree[2], tree[3])) {
+			newReplacement[0] = simplify(newReplacement[0]);
+			newReplacement[1] = simplify(newReplacement[1]);
+			replacements.push(newReplacement);
+		}
+		return '\\text{stored definition}';
+	}
+	let timeString = 'evalReplacements(' + JSON.stringify(tree) + ')';
+	console.time(timeString);
+	let newTree;
+	let changeMade = true;
+	while (changeMade) {
+		changeMade = false;
+		tree = evalToFixedPoint(tree);
+		newTree = evalFunctions(tree);
+		if (!treeEquals(tree, newTree)) {
+			changeMade = true;
+			tree = newTree;
+		}
+	}
+	console.timeEnd(timeString);
+	return tree;
 }

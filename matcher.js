@@ -57,7 +57,7 @@ function findMatchAndReplace(pattern, tree, replacement, cond) {
 						if (end - start == 1 && hasAttribute(head(pattern), 'oneIdentity')) {
 							continue; // will be covered later
 						}
-						let subtree = [head(pattern), ...tree.slice(start+1, end+1)];
+						let subtree = [head(pattern), ...tree.slice(start + 1, end + 1)];
 						let newTree = findMatchAndReplaceRec(pattern, subtree, replacement, cond);
 						if (newTree !== null) {
 							tree.splice(start + 1, end - start, newTree);
@@ -112,16 +112,16 @@ function* permutations(array, k) {
 		yield array;
 	} else {
 		for (var i = 0; i < k; i++) {
-			yield* permutations(array, k-1);
+			yield* permutations(array, k - 1);
 			var tmp;
 			if (k % 2) {
 				tmp = array[0];
-				array[0] = array[k-1];
-				array[k-1] = tmp;
+				array[0] = array[k - 1];
+				array[k - 1] = tmp;
 			} else {
 				tmp = array[i];
-				array[i] = array[k-1];
-				array[k-1] = tmp;
+				array[i] = array[k - 1];
+				array[k - 1] = tmp;
 			}
 		}
 	}
@@ -132,8 +132,8 @@ function* nGroupings(array, n) {
 		yield [array];
 	} else {
 		for (let i = 1; i < array.length - n + 2; i++) {
-			for (let end of nGroupings(array.slice(i), n-1)) {
-				yield [array.slice(0,i)].concat(end);
+			for (let end of nGroupings(array.slice(i), n - 1)) {
+				yield [array.slice(0, i)].concat(end);
 			}
 		}
 	}
@@ -160,7 +160,7 @@ function* matches(pattern, tree, cond, captures = {}) {
 			if (!matches(captures[captureVar(pattern)], tree, cond, captures).next().done)
 				yield captures;
 		} else {
-			let newCaptures = Object.assign({[captureVar(pattern)]: tree}, captures);
+			let newCaptures = Object.assign({ [captureVar(pattern)]: tree }, captures);
 			if (cond === undefined || evalReplacements(replaceCaptures(cond, newCaptures)) === true)
 				yield newCaptures;
 		}
@@ -229,7 +229,7 @@ function treeValue(tree) {
 }
 
 function makeComparator(f) {
-	return (a,b) => {
+	return (a, b) => {
 		let x = f(a);
 		let y = f(b);
 		return x === y ? 0 : (x > y ? 1 : -1);
@@ -264,7 +264,7 @@ function evalConstants(tree) {
 			}
 		});
 		sortTrees(remainingSum);
-		return remainingSum.length == 0 ? sum : (sum == 0 ? ['+', ...remainingSum] : ['+', sum, ...remainingSum]);
+		return remainingSum.length == 0 ? sum : (sum == 0 ? (remainingSum.length == 1 ? remainingSum[0] : ['+', ...remainingSum]) : ['+', sum, ...remainingSum]);
 	case '*':
 		var product = 1;
 		var remainingProduct = [];
@@ -276,7 +276,7 @@ function evalConstants(tree) {
 			}
 		});
 		sortTrees(remainingProduct);
-		return remainingProduct.length == 0 ? product : (product == 1 ? ['*', ...remainingProduct] : ['*', product, ...remainingProduct]);
+		return remainingProduct.length == 0 ? product : (product == 1 ? (remainingProduct.length == 1 ? remainingProduct[0] : ['*', ...remainingProduct]) : ['*', product, ...remainingProduct]);
 	case '/':
 		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1])) {
 			let x = gcd(evaledTail[0], evaledTail[1]);
@@ -381,10 +381,99 @@ function evalToFixedPoint(tree) {
 	return tree;
 }
 
+function findFirstOptional(tree, indices = []) {
+	if (!Array.isArray(tree)) {
+		return null;
+	}
+	if (head(tree) === '?') {
+		return indices;
+	}
+	for (let i = 1; i < tree.length; i++) {
+		let o = findFirstOptional(tree[i], indices.concat([i]));
+		if (o !== null)
+			return o;
+	}
+	return null;
+}
+
+function setIndex(tree, value, indices) {
+	if (indices.length == 1) {
+		tree.splice(indices[0], 1, value);
+	} else {
+		setIndex(tree[indices[0]], value, tail(indices));
+	}
+}
+
+function treeAt(tree, indices) {
+	if (indices.length == 0) {
+		return tree;
+	}
+	if (indices.length == 1) {
+		return tree[indices[0]];
+	}
+	return treeAt(tree[indices[0]], tail(indices));
+}
+
+function getDefault(tree, parentIndices, childIndex) {
+	let op = head(treeAt(tree, parentIndices));
+	if (op === "*") {
+		return 1;
+	}
+	if (op === "+") {
+		return 0;
+	}
+	if (op === "/" && childIndex == 2) {
+		return 1;
+	}
+	if (op === "^" && childIndex == 2) {
+		return 1;
+	}
+	throw "invalid optional";
+}
+
+function expandOptionals(pattern, replacement, cond) {
+	let indices = findFirstOptional(pattern);
+	if (indices === null) {
+		return [[pattern, replacement, cond]];
+	}
+	let samePattern = deepCopyTree(pattern);
+	setIndex(samePattern, treeAt(samePattern, indices)[1], indices);
+
+	let defaultPattern = deepCopyTree(pattern);
+	let defaultReplacement = deepCopyTree(replacement);
+	let toReplace = treeAt(defaultPattern, indices)[1];
+	let defaultVal = getDefault(defaultPattern, indices.slice(0, -1), indices[indices.length - 1]);
+
+	if (isCapture(toReplace)) {
+		toReplace = toReplace[1];
+		if (Array.isArray(toReplace)) {
+			if (head(treeAt(defaultPattern, indices.slice(0, -1))) === head(toReplace)) {
+				let captures = {};
+				for (let i = 1; i < toReplace.length; i++)
+					captures[toReplace[i]] = defaultVal;
+				defaultReplacement = replaceCaptures(defaultReplacement, captures);
+			} else {
+				throw 'invalid optional - subexpression of this type not supported';
+			}
+		} else {
+			defaultReplacement = replaceCaptures(defaultReplacement, { [toReplace]: defaultVal });
+		}
+	}
+
+	setIndex(defaultPattern, defaultVal, indices);
+
+	return expandOptionals(defaultPattern, defaultReplacement, cond).concat(expandOptionals(samePattern, replacement, cond));
+}
+
+
 function evalReplacements(tree) {
 	tree = simplify(tree);
 	if (head(tree) === 'define') {
-		replacements.push([tree[1], tree[2], tree[3]]);
+		for (let newReplacement of expandOptionals(tree[1], tree[2], tree[3])) {
+			newReplacement[0] = simplify(newReplacement[0]);
+			newReplacement[1] = simplify(newReplacement[1]);
+			replacements.push(newReplacement);
+		}
 		return '\\text{stored definition}';
 	}
 	let timeString = 'evalReplacements(' + JSON.stringify(tree) + ')';

@@ -118,6 +118,20 @@ const TESTS = [
 			"in": "5/10",
 			"out": "1/2"
 		}
+	],
+	[
+		{
+			"in": "\\frac{a.^{x.?}b.?}{a.^{y.?}c.?}\\equiv\\frac{a^{x-y}b}{c}",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "\\frac{x^2yz^5}{xy^4z^2}",
+			"out": "xy^{-3}z^3"
+		},
+		{
+			"in": "\\frac{x^3}{x}",
+			"out": "x^2"
+		}
 	]
 ];
 

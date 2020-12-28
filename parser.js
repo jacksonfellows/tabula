@@ -143,6 +143,8 @@ function expandCommand(command, arguments) {
 		return [operatorToken({'=': '=', 'ne': '!=', '>': '>', 'ge': '>=', '<': '<', 'le': '<='}[command])];
 	case 'forall':
 		return [operatorToken(command)];
+	case '?':
+		return [operatorToken(command)];
 	default:
 		throw 'unsupported command: ' + command;
 	}
@@ -152,7 +154,7 @@ function addImplicitMuls(latex) {
 	var newLatex = [];
 	for (var i = 0; i < latex.length - 1; i++) {
 		newLatex.push(latex[i]);
-		if ((latex[i].type === 'literal' || latex[i].type === 'rparen' || latex[i].type === 'rbracket') && (latex[i+1].type === 'literal' || latex[i+1].type === 'lparen')) {
+		if ((latex[i].type === 'literal' || latex[i].type === 'rparen' || latex[i].type === 'rbracket' || latex[i].type === 'optional') && (latex[i+1].type === 'literal' || latex[i+1].type === 'lparen')) {
 			newLatex.push(operatorToken('*'));
 		}
 	}
@@ -217,6 +219,8 @@ function operatorToken(op) {
 		return operatorCompToken(op);
 	case 'forall':
 		return operatorForallToken();
+	case '?':
+		return operatorOptionalToken();
 	default:
 		throw 'unsupported operator: ' + op;
 	}
@@ -338,6 +342,17 @@ function operatorEquivToken() {
 			if (right[0] === 'forall')
 				return ['define', left, right[1], right[2]];
 			return ['define', left, right];
+		}
+	};
+}
+
+
+function operatorOptionalToken() {
+	return {
+		type: 'optional',
+		lbp: 40,
+		led: function (left) {
+			return ['?', left];
 		}
 	};
 }

@@ -137,8 +137,12 @@ function expandCommand(command, arguments) {
 		return [operatorToken(']')];
 	case 'equiv':
 		return [operatorToken('equiv')];
-	case 'ln': case 'log':
+	case 'ln': case 'log': case 'sin': case 'cos':
 		return [literalToken(command)];
+	case '=': case 'ne': case '>': case 'ge': case '<': case 'le':
+		return [operatorToken({'=': '=', 'ne': '!=', '>': '>', 'ge': '>=', '<': '<', 'le': '<='}[command])];
+	case 'forall':
+		return [operatorToken(command)];
 	default:
 		throw 'unsupported command: ' + command;
 	}
@@ -209,6 +213,10 @@ function operatorToken(op) {
 		return operatorCommaToken();
 	case 'equiv':
 		return operatorEquivToken();
+	case '=': case '!=': case '>': case '>=': case '<': case '<=':
+		return operatorCompToken(op);
+	case 'forall':
+		return operatorForallToken();
 	default:
 		throw 'unsupported operator: ' + op;
 	}
@@ -249,7 +257,7 @@ function operatorDivToken() {
 	return {
 		lbp: 25,
 		led: function(left) {
-			return ['/', left, expression(25)];
+			return ['/', left, expression(35)];
 		}
 	};
 }
@@ -326,7 +334,31 @@ function operatorEquivToken() {
 	return {
 		lbp: 5,
 		led: function(left) {
-			return ['define', left, expression(5)];
+			let right = expression(5);
+			if (right[0] === 'forall')
+				return ['define', left, right[1], right[2]];
+			return ['define', left, right];
+		}
+	};
+}
+
+function operatorForallToken() {
+	return {
+		lbp: 6,
+		led: function(left) {
+			return ['forall', left, expression(6)];
+		}
+	};
+}
+
+function operatorCompToken(comp) {
+	return {
+		lbp: 7,
+		led: function(left) {
+			if (Array.isArray(left) && ['=', '!=', '>', '>=', '<', '<='].includes(left[0])) {
+				throw 'cannot chain comparisons';
+			}
+			return [comp, left, expression(7)];
 		}
 	};
 }

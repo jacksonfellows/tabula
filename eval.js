@@ -9,7 +9,7 @@ var config = {
 	leftRightIntoCmdGoes: 'up',
 	restrictMismatchedBrackets: true,
 	supSubsRequireOperand: true,
-	autoCommands: 'pi theta forall equiv sqrt'
+	autoCommands: 'pi theta forall equiv sqrt lambda neq'
 };
 
 function addInputBox() {
@@ -38,8 +38,13 @@ function updateAllOutputBoxes() {
 	}
 }
 
-window.onbeforeunload = function (e) {
-	return 'Do you want to leave the page? Your work will not be saved.';
-};
-
-addInputBox();
+function printRegressionTest() {
+	let testCase = [];
+	for (let i = 0; i < inputs.length; i++) {
+		testCase.push({
+			"in": inputs[i].latex(),
+			"out": outputs[i].latex()
+		});
+	}
+	console.log(JSON.stringify(testCase, null, '\t'));
+}

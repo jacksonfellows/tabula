@@ -12,6 +12,8 @@ var config = {
 	autoCommands: 'pi theta forall equiv sqrt lambda neq'
 };
 
+addInputBox();
+
 function addInputBox() {
 	var id = ++maxID;
 	$("#fields").append("<p><span id=\"I" + id + "\" style=\"width: 100%\"></span></p>",
@@ -21,6 +23,7 @@ function addInputBox() {
 	var outputSpan = $("#O" + id)[0];
 	inputs.push(MQ.MathField(inputSpan, config));
 	outputs.push(MQ.StaticMath(outputSpan, config));
+	inputs[id].focus();
 }
 
 function updateOutputBox(id) {
@@ -88,6 +91,7 @@ function loadNotebookFromFile(file) {
 	replacements = [];
 	$('#fields').empty();
 	inputs = [];
+	maxID = -1;
 	outputs = [];
 	for (let cell of cells) {
 		addInputBox();

@@ -33,6 +33,68 @@ function updateAllOutputBoxes() {
 	}
 }
 
+function download(content, fileName, contentType) {
+    var a = document.createElement('a');
+    var file = new Blob([content], {type: contentType});
+    a.href = URL.createObjectURL(file);
+    a.download = fileName;
+    a.click();
+}
+
+function setTitle(newTitle) {
+	$('#title').val(newTitle);
+}
+
+function getTitle() {
+	return $('#title').val();
+}
+
+function saveNotebook() {
+	let notebookData = JSON.stringify({
+		title: getTitle(),
+		cells: inputs.map(i => i.latex())
+	});
+	download(notebookData, getTitle() + '.tabula', 'text/json');
+}
+
+function loadFile() {
+	$('#getFile').click();
+}
+
+$('#getFile').on('change', readFile);
+
+function readFile(e) {
+	var file = e.target.files[0];
+	if (!file) {
+		console.log('no file');
+		return;
+	}
+	var reader = new FileReader();
+	reader.onload = function(e) {
+		var contents = e.target.result;
+		loadNotebookFromFile(contents);
+	};
+	reader.readAsText(file);
+
+	$(e.target).prop('value', '');
+}
+
+function loadNotebookFromFile(file) {
+	console.log('loading file');
+	let notebook = JSON.parse(file);
+	setTitle(notebook.title);
+	let cells = notebook.cells;
+	// stupid
+	replacements = [];
+	$('#fields').empty();
+	inputs = [];
+	outputs = [];
+	for (let cell of cells) {
+		addInputBox();
+		inputs[inputs.length - 1].latex(cell);
+	}
+}
+
 function printRegressionTest() {
 	let testCase = [];
 	for (let i = 0; i < inputs.length; i++) {

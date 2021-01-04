@@ -132,6 +132,24 @@ const TESTS = [
 			"in": "\\frac{x^3}{x}",
 			"out": "x^2"
 		}
+	],
+	[
+		{
+			"in": "a\\equiv3",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "a+a",
+			"out": "6"
+		},
+		{
+			"in": "a\\equiv1",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "a+a",
+			"out": "2"
+		}
 	]
 ];
 

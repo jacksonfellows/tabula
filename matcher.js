@@ -68,18 +68,21 @@ function findMatchAndReplace(pattern, tree, replacement, cond) {
 			}
 		}
 		if (Array.isArray(tree)) {
+			let changeMade = false;
 			for (let i = 1; i < tree.length; i++) {
 				let newTree = findMatchAndReplaceRec(pattern, tree[i], replacement, cond);
 				if (newTree !== null) {
 					tree[i] = newTree;
-					return tree;
+					changeMade = true;
 				}
 			}
+			if (changeMade)
+				return tree;
 		}
 		return null;
 	}
 
-	let newTree = findMatchAndReplaceRec(pattern, tree, replacement, cond);
+	let newTree = findMatchAndReplaceRec(pattern, deepCopyTree(tree), replacement, cond);
 	return newTree !== null ? newTree : tree;
 }
 
@@ -364,13 +367,13 @@ function treeEquals(a, b) {
 var replacements = [];
 
 function evalToFixedPoint(tree) {
-	var newTree;
-	var changeMade = true;
+	let newTree;
+	let changeMade = true;
 	while (changeMade) {
 		changeMade = false;
 		// newest to oldest
-		for (var i = replacements.length - 1; i >= 0; i--) {
-			var [pattern, replacement, cond] = replacements[i];
+		for (let i = replacements.length - 1; i >= 0; i--) {
+			let [pattern, replacement, cond] = replacements[i];
 			newTree = simplify(findMatchAndReplace(pattern, tree, replacement, cond));
 			if (!treeEquals(tree, newTree)) {
 				changeMade = true;

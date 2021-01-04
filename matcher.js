@@ -247,6 +247,38 @@ function gcd(a, b) {
 	return b == 0 ? a : gcd(b, a % b);
 }
 
+function isConstantFrac(tree) {
+	return Array.isArray(tree) && tree[0] === '/' && !isNaN(tree[1]) && !isNaN(tree[2]);
+}
+
+function isConstant(tree) {
+	return !isNaN(tree) || isConstantFrac(tree);
+}
+
+function constantAdd(a, b) {
+	if (!isNaN(a) && !isNaN(b))
+		return a + b;
+	if (isConstantFrac(a) && isConstantFrac(b))
+		return ['/', a[1] * b[2] + a[2] * b[1], a[2] * b[2]];
+	if (!isNaN(a) && isConstantFrac(b))
+		return ['/', a * b[2] + b[1], b[2]];
+	if (isConstantFrac(a) && !isNaN(b))
+		return ['/', a[1] + a[2] * b, a[2]];
+	throw 'invalid terms for constant addition: ' + JSON.stringify(a) + ' + ' + JSON.stringify(b);
+}
+
+function constantMul(a, b) {
+	if (!isNaN(a) && !isNaN(b))
+		return a * b;
+	if (isConstantFrac(a) && isConstantFrac(b))
+		return ['/', a[1] * b[1], a[2] * b[2]];
+	if (!isNaN(a) && isConstantFrac(b))
+		return ['/', a * b[1], b[2]];
+	if (isConstantFrac(a) && !isNaN(b))
+		return ['/', a[1] * b, a[2]];
+	throw 'invalid terms for constant multiplication: ' + JSON.stringify(a) + ' * ' + JSON.stringify(b);	
+}
+
 function evalConstants(tree) {
 	if (!Array.isArray(tree)) {
 		return tree;
@@ -256,67 +288,67 @@ function evalConstants(tree) {
 	}
 	var evaledTail = tail(tree).map(evalConstants);
 	switch (head(tree)) {
-		case '+':
-			var sum = 0;
-			var remainingSum = [];
-			evaledTail.forEach(x => {
-				if (isNaN(x)) {
-					remainingSum.push(x);
-				} else {
-					sum += x;
-				}
-			});
-			sortTrees(remainingSum);
-			return remainingSum.length == 0 ? sum : (sum == 0 ? (remainingSum.length == 1 ? remainingSum[0] : ['+', ...remainingSum]) : ['+', sum, ...remainingSum]);
-		case '*':
-			var product = 1;
-			var remainingProduct = [];
-			evaledTail.forEach(x => {
-				if (isNaN(x)) {
-					remainingProduct.push(x);
-				} else {
-					product *= x;
-				}
-			});
-			sortTrees(remainingProduct);
-			return remainingProduct.length == 0 ? product : (product == 1 ? (remainingProduct.length == 1 ? remainingProduct[0] : ['*', ...remainingProduct]) : ['*', product, ...remainingProduct]);
-		case '/':
-			if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1])) {
-				let x = gcd(evaledTail[0], evaledTail[1]);
-				let n = evaledTail[0] / x;
-				let d = evaledTail[1] / x;
-				return d == 1 ? n : ['/', n, d];
+	case '+':
+		let sum = 0;
+		let remainingSum = [];
+		evaledTail.forEach(x => {
+			if (isConstant(x)) {
+				sum = evalConstants(constantAdd(sum, x));
+			} else {
+				remainingSum.push(x);
 			}
-		case '^':
-			if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1])) {
-				return evaledTail[0] ** evaledTail[1];
+		});
+		sortTrees(remainingSum);
+		return remainingSum.length == 0 ? sum : (sum == 0 ? (remainingSum.length == 1 ? remainingSum[0] : ['+', ...remainingSum]) : ['+', sum, ...remainingSum]);
+	case '*':
+		let product = 1;
+		let remainingProduct = [];
+		evaledTail.forEach(x => {
+			if (isConstant(x)) {
+				product = evalConstants(constantMul(product, x));
+			} else {
+				remainingProduct.push(x);
 			}
-			if (evaledTail[1] == 1)
-				return evaledTail[0];
-		case '=':
-			if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
-				return evaledTail[0] === evaledTail[1];
-			if (treeEquals(evaledTail[0], evaledTail[1]))
-				return true;
-		case '!=':
-			if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
-				return evaledTail[0] !== evaledTail[1];
-			if (treeEquals(evaledTail[0], evaledTail[1]))
-				return false;
-		case '>':
-			if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
-				return evaledTail[0] > evaledTail[1];
-		case '>=':
-			if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
-				return evaledTail[0] >= evaledTail[1];
-		case '<':
-			if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
-				return evaledTail[0] < evaledTail[1];
-		case '<=':
-			if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
-				return evaledTail[0] <= evaledTail[1];
-		default:
-			return [head(tree), ...evaledTail];
+		});
+		sortTrees(remainingProduct);
+		return remainingProduct.length == 0 ? product : (product == 1 ? (remainingProduct.length == 1 ? remainingProduct[0] : ['*', ...remainingProduct]) : ['*', product, ...remainingProduct]);
+	case '/':
+		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1])) {
+			let x = Math.abs(gcd(evaledTail[0], evaledTail[1]));
+			let n = evaledTail[0] / x;
+			let d = evaledTail[1] / x;
+			return d == 1 ? n : ['/', n, d];
+		}
+	case '^':
+		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1])) {
+			return evaledTail[0] ** evaledTail[1];
+		}
+		if (evaledTail[1] == 1)
+			return evaledTail[0];
+	case '=':
+		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+			return evaledTail[0] === evaledTail[1];
+		if (treeEquals(evaledTail[0], evaledTail[1]))
+			return true;
+	case '!=':
+		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+			return evaledTail[0] !== evaledTail[1];
+		if (treeEquals(evaledTail[0], evaledTail[1]))
+			return false;
+	case '>':
+		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+			return evaledTail[0] > evaledTail[1];
+	case '>=':
+		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+			return evaledTail[0] >= evaledTail[1];
+	case '<':
+		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+			return evaledTail[0] < evaledTail[1];
+	case '<=':
+		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+			return evaledTail[0] <= evaledTail[1];
+	default:
+		return [head(tree), ...evaledTail];
 	}
 }
 

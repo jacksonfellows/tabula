@@ -1,11 +1,11 @@
 var MQ = MathQuill.getInterface(2);
 
 var config = {
-    spaceBehavesLikeTab: true,
-    leftRightIntoCmdGoes: 'up',
-    restrictMismatchedBrackets: true,
-    supSubsRequireOperand: true,
-    autoCommands: 'pi theta forall equiv sqrt'
+	spaceBehavesLikeTab: true,
+	leftRightIntoCmdGoes: 'up',
+	restrictMismatchedBrackets: true,
+	supSubsRequireOperand: true,
+	autoCommands: 'pi theta forall equiv sqrt'
 };
 
 const TESTS = [
@@ -156,36 +156,37 @@ const TESTS = [
 
 var n_failed = 0;
 var n_passed = 0;
+var replacements = [];
 
 for (var notebook of TESTS) {
-    for (var cell of notebook) {
-        var expect_in = cell['in'];
-	    var expect_out = cell['out'];
-	    var actual_out;
-	    try {
-		    actual_out = printLatex(evalReplacements(parse(expect_in)));
-	    } catch(err) {
-		    actual_out = '\\text{' + err + '}';
-	    }
-	    var passed = treeEquals(parse(expect_out), parse(actual_out));
+	for (var cell of notebook) {
+		var expect_in = cell['in'];
+		var expect_out = cell['out'];
+		var actual_out;
+		try {
+			actual_out = printLatex(evalReplacements(parse(expect_in), replacements));
+		} catch (err) {
+			actual_out = '\\text{' + err + '}';
+		}
+		var passed = treeEquals(parse(expect_out), parse(actual_out));
 
-        $("#fields").append("<p><span></span></p>");
-        MQ.StaticMath($("p span").last()[0], config).latex(expect_in);
+		$("#fields").append("<p><span></span></p>");
+		MQ.StaticMath($("p span").last()[0], config).latex(expect_in);
 
-        $("#fields").append(`<p class = "${passed ? 'passed' : 'failed'}"><span></span></p>`);
-        MQ.StaticMath($("p span").last()[0], config).latex(actual_out);
+		$("#fields").append(`<p class = "${passed ? 'passed' : 'failed'}"><span></span></p>`);
+		MQ.StaticMath($("p span").last()[0], config).latex(actual_out);
 
-        if (passed) {
-            n_passed++;
-        } else {
-            $("#fields").append("<p>Expected value:</p><p><span></span></p>");
-            MQ.StaticMath($("p span").last()[0], config).latex(expect_out);
-            n_failed++;
-        }
+		if (passed) {
+			n_passed++;
+		} else {
+			$("#fields").append("<p>Expected value:</p><p><span></span></p>");
+			MQ.StaticMath($("p span").last()[0], config).latex(expect_out);
+			n_failed++;
+		}
 
-        $("#fields").append("<hr></hr>");
+		$("#fields").append("<hr></hr>");
 
-    }
+	}
 	$("#fields").append("<br></br><br></br>");
 	replacements = [];
 }

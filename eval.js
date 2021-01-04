@@ -1,8 +1,10 @@
 var MQ = MathQuill.getInterface(2);
-var maxID = -1;
 
-var inputs = [];
-var outputs = [];
+var NOTEBOOK = {
+	inputs: [],
+	outputs: [],
+	replacements: []
+}
 
 var config = {
 	spaceBehavesLikeTab: true,
@@ -15,33 +17,36 @@ var config = {
 addInputBox();
 
 function addInputBox() {
-	var id = ++maxID;
+	var id = NOTEBOOK.inputs.length;
 	$("#fields").append("<p><span id=\"I" + id + "\" style=\"width: 100%\"></span></p>",
 		"<p><span id=\"O" + id + "\"></span></p>",
 		"<p><button onclick=\"updateOutputBox(" + id + ")\">evaluate cell</button></p>");
 	var inputSpan = $("#I" + id)[0];
 	var outputSpan = $("#O" + id)[0];
-	inputs.push(MQ.MathField(inputSpan, config));
-	outputs.push(MQ.StaticMath(outputSpan, config));
-	inputs[id].focus();
+	NOTEBOOK.inputs.push(MQ.MathField(inputSpan, config));
+	NOTEBOOK.outputs.push(MQ.StaticMath(outputSpan, config));
+	NOTEBOOK.inputs[id].focus();
 }
 
 function updateOutputBox(id) {
-	outputs[id].latex(printLatex(evalReplacements(parse(inputs[id].latex()))));
+	NOTEBOOK.outputs[id].latex(printLatex(evalReplacements(
+		parse(NOTEBOOK.inputs[id].latex()),
+		NOTEBOOK.replacements
+	)));
 }
 
 function updateAllOutputBoxes() {
-	for (var id = 0; id < inputs.length; id++) {
+	for (var id = 0; id < NOTEBOOK.inputs.length; id++) {
 		updateOutputBox(id);
 	}
 }
 
 function download(content, fileName, contentType) {
-    var a = document.createElement('a');
-    var file = new Blob([content], {type: contentType});
-    a.href = URL.createObjectURL(file);
-    a.download = fileName;
-    a.click();
+	var a = document.createElement('a');
+	var file = new Blob([content], { type: contentType });
+	a.href = URL.createObjectURL(file);
+	a.download = fileName;
+	a.click();
 }
 
 function setTitle(newTitle) {
@@ -55,7 +60,7 @@ function getTitle() {
 function saveNotebook() {
 	let notebookData = JSON.stringify({
 		title: getTitle(),
-		cells: inputs.map(i => i.latex())
+		cells: NOTEBOOK.inputs.map(i => i.latex())
 	});
 	download(notebookData, getTitle() + '.tabula', 'text/json');
 }
@@ -73,7 +78,7 @@ function readFile(e) {
 		return;
 	}
 	var reader = new FileReader();
-	reader.onload = function(e) {
+	reader.onload = function (e) {
 		var contents = e.target.result;
 		loadNotebookFromFile(contents);
 	};
@@ -84,27 +89,27 @@ function readFile(e) {
 
 function loadNotebookFromFile(file) {
 	console.log('loading file');
-	let notebook = JSON.parse(file);
-	setTitle(notebook.title);
-	let cells = notebook.cells;
-	// stupid
-	replacements = [];
+	let newnotebook = JSON.parse(file);
+	setTitle(newnotebook.title);
+	let cells = newnotebook.cells;
 	$('#fields').empty();
-	inputs = [];
-	maxID = -1;
-	outputs = [];
+	NOTEBOOK = {
+		inputs: [],
+		outputs: [],
+		replacements: []
+	}
 	for (let cell of cells) {
 		addInputBox();
-		inputs[inputs.length - 1].latex(cell);
+		NOTEBOOK.inputs[NOTEBOOK.inputs.length - 1].latex(cell);
 	}
 }
 
 function printRegressionTest() {
 	let testCase = [];
-	for (let i = 0; i < inputs.length; i++) {
+	for (let i = 0; i < NOTEBOOK.inputs.length; i++) {
 		testCase.push({
-			"in": inputs[i].latex(),
-			"out": outputs[i].latex()
+			"in": NOTEBOOK.inputs[i].latex(),
+			"out": NOTEBOOK.outputs[i].latex()
 		});
 	}
 	console.log(JSON.stringify(testCase, null, '\t'));

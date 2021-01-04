@@ -1,25 +1,27 @@
 <html>
-  <head>
-    <title>Tabula</title>
-    <link rel="stylesheet" href="mathquill/mathquill.css">
+
+<head>
+  <title>Tabula</title>
+  <link rel="stylesheet" href="mathquill/mathquill.css">
   </link>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
   <script src="mathquill/mathquill.min.js"></script>
   <script src="parser.js"></script>
   <script src="matcher.js"></script>
   <script src="printer.js"></script>
-  </head>
+</head>
 
-  <body>
-    <h2><input id="title" style="font-size: inherit;" type="text" value="Untitled Notebook"></h2>
-    <hr>
-    <div id="fields"></div>
-    <button type="button" onclick="addInputBox()">new cell</button>
-    <button type="button" onclick="updateAllOutputBoxes()">evaluate all cells</button>
-    <button type="button" onclick="saveNotebook()">save cells</button>
-    <input type="file" id="getFile" style="display: none" accept=".tabula">
-    <button type="button" onclick="loadFile()">load file</button>
-    <p id="parsed"></p>
-  </body>
-  <script src="eval.js"></script>
+<body>
+  <h2><input id="title" style="font-size: inherit;" type="text" value="Untitled Notebook"><br></h2>
+  <hr>
+  <div id="fields"></div>
+  <button type="button" onclick="addInputBox()">new cell</button>
+  <button type="button" onclick="updateAllOutputBoxes()">evaluate all cells</button>
+  <button type="button" onclick="saveNotebook()">save cells</button>
+  <input type="file" id="getFile" style="display: none" accept=".tabula">
+  <button type="button" onclick="loadFile()">load file</button>
+  <p id="parsed"></p>
+</body>
+<script src="eval.js"></script>
+
 </html>

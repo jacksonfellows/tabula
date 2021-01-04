@@ -23,9 +23,9 @@ function captureVar(capture) {
 	return capture[1];
 }
 
-function findMatchAndReplace(pattern, tree, replacement, cond) {
+function findMatchAndReplace(pattern, tree, replacement, cond, replacements) {
 	function findMatchAndReplaceRec(pattern, tree, replacement, cond) {
-		for (let captures of matches(pattern, tree, cond)) { // max 1 iteration
+		for (let captures of matches(pattern, tree, cond, replacements)) { // max 1 iteration
 			return replaceCaptures(replacement, captures);
 		}
 		if (Array.isArray(pattern) && Array.isArray(tree) && head(pattern) === head(tree) && hasAttribute(head(pattern), 'flat') && pattern.length < tree.length) {
@@ -142,52 +142,52 @@ function* nGroupings(array, n) {
 	}
 }
 
-function* listMatches(patternList, treeList, cond, captures) {
+function* listMatches(patternList, treeList, cond, replacements, captures) {
 	if (patternList.length == treeList.length) {
 		if (patternList.length == 0) {
 			yield captures;
 		} else {
-			for (let newCaptures of matches(head(patternList), head(treeList), cond, captures)) {
-				yield* listMatches(tail(patternList), tail(treeList), cond, newCaptures);
+			for (let newCaptures of matches(head(patternList), head(treeList), cond, replacements, captures)) {
+				yield* listMatches(tail(patternList), tail(treeList), cond, replacements, newCaptures);
 			}
 		}
 	}
 }
 
-function* matches(pattern, tree, cond, captures = {}) {
+function* matches(pattern, tree, cond, replacements, captures = {}) {
 	if (!Array.isArray(pattern) && !Array.isArray(tree)) {
 		if (pattern === tree)
 			yield captures;
 	} else if (isCapture(pattern)) {
 		if (captures[captureVar(pattern)]) {
-			if (!matches(captures[captureVar(pattern)], tree, cond, captures).next().done)
+			if (!matches(captures[captureVar(pattern)], tree, cond, replacements, captures).next().done)
 				yield captures;
 		} else {
 			let newCaptures = Object.assign({ [captureVar(pattern)]: tree }, captures);
-			if (cond === undefined || evalReplacements(replaceCaptures(cond, newCaptures)) === true)
+			if (cond === undefined || evalReplacements(replaceCaptures(cond, newCaptures), replacements) === true)
 				yield newCaptures;
 		}
 	} else if (head(pattern) === head(tree)) {
 		if (pattern.length == tree.length) { // need to be the same length to match this way
 			if (hasAttribute(head(pattern), 'orderless')) {
 				for (let treeTailOrder of permutations(tail(tree))) {
-					yield* listMatches(tail(pattern), treeTailOrder, cond, captures);
+					yield* listMatches(tail(pattern), treeTailOrder, cond, replacements, captures);
 				}
 			} else {
-				yield* listMatches(tail(pattern), tail(tree), cond, captures);
+				yield* listMatches(tail(pattern), tail(tree), cond, replacements, captures);
 			}
 		} else if (pattern.length < tree.length && hasAttribute(head(pattern), 'flat')) {
 			if (hasAttribute(head(pattern), 'orderless')) {
 				for (let perm of permutations(tail(tree))) {
 					for (let tailGrouping of nGroupings(perm, pattern.length - 1)) {
 						tailGrouping = tailGrouping.map(x => x.length == 1 && hasAttribute(head(pattern), 'oneIdentity') ? x[0] : [head(pattern), ...x]);
-						yield* listMatches(tail(pattern), tailGrouping, cond, captures);
+						yield* listMatches(tail(pattern), tailGrouping, cond, replacements, captures);
 					}
 				}
 			} else {
 				for (let tailGrouping of nGroupings(tail(tree), pattern.length - 1)) {
 					tailGrouping = tailGrouping.map(x => x.length == 1 && hasAttribute(head(pattern), 'oneIdentity') ? x[0] : [head(pattern), ...x]);
-					yield* listMatches(tail(pattern), tailGrouping, cond, captures);
+					yield* listMatches(tail(pattern), tailGrouping, cond, replacements, captures);
 				}
 			}
 		}
@@ -256,67 +256,67 @@ function evalConstants(tree) {
 	}
 	var evaledTail = tail(tree).map(evalConstants);
 	switch (head(tree)) {
-	case '+':
-		var sum = 0;
-		var remainingSum = [];
-		evaledTail.forEach(x => {
-			if (isNaN(x)) {
-				remainingSum.push(x);
-			} else {
-				sum += x;
+		case '+':
+			var sum = 0;
+			var remainingSum = [];
+			evaledTail.forEach(x => {
+				if (isNaN(x)) {
+					remainingSum.push(x);
+				} else {
+					sum += x;
+				}
+			});
+			sortTrees(remainingSum);
+			return remainingSum.length == 0 ? sum : (sum == 0 ? (remainingSum.length == 1 ? remainingSum[0] : ['+', ...remainingSum]) : ['+', sum, ...remainingSum]);
+		case '*':
+			var product = 1;
+			var remainingProduct = [];
+			evaledTail.forEach(x => {
+				if (isNaN(x)) {
+					remainingProduct.push(x);
+				} else {
+					product *= x;
+				}
+			});
+			sortTrees(remainingProduct);
+			return remainingProduct.length == 0 ? product : (product == 1 ? (remainingProduct.length == 1 ? remainingProduct[0] : ['*', ...remainingProduct]) : ['*', product, ...remainingProduct]);
+		case '/':
+			if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1])) {
+				let x = gcd(evaledTail[0], evaledTail[1]);
+				let n = evaledTail[0] / x;
+				let d = evaledTail[1] / x;
+				return d == 1 ? n : ['/', n, d];
 			}
-		});
-		sortTrees(remainingSum);
-		return remainingSum.length == 0 ? sum : (sum == 0 ? (remainingSum.length == 1 ? remainingSum[0] : ['+', ...remainingSum]) : ['+', sum, ...remainingSum]);
-	case '*':
-		var product = 1;
-		var remainingProduct = [];
-		evaledTail.forEach(x => {
-			if (isNaN(x)) {
-				remainingProduct.push(x);
-			} else {
-				product *= x;
+		case '^':
+			if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1])) {
+				return evaledTail[0] ** evaledTail[1];
 			}
-		});
-		sortTrees(remainingProduct);
-		return remainingProduct.length == 0 ? product : (product == 1 ? (remainingProduct.length == 1 ? remainingProduct[0] : ['*', ...remainingProduct]) : ['*', product, ...remainingProduct]);
-	case '/':
-		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1])) {
-			let x = gcd(evaledTail[0], evaledTail[1]);
-			let n = evaledTail[0] / x;
-			let d = evaledTail[1] / x;
-			return d == 1 ? n : ['/', n, d];
-		}
-	case '^':
-		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1])) {
-			return evaledTail[0] ** evaledTail[1];
-		}
-		if (evaledTail[1] == 1)
-			return evaledTail[0];
-	case '=':
-		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
-			return evaledTail[0] === evaledTail[1];
-		if (treeEquals(evaledTail[0], evaledTail[1]))
-			return true;
-	case '!=':
-		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
-			return evaledTail[0] !== evaledTail[1];
-		if (treeEquals(evaledTail[0], evaledTail[1]))
-			return false;
-	case '>':
-		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
-			return evaledTail[0] > evaledTail[1];
-	case '>=':
-		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
-			return evaledTail[0] >= evaledTail[1];
-	case '<':
-		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
-			return evaledTail[0] < evaledTail[1];
-	case '<=':
-		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
-			return evaledTail[0] <= evaledTail[1];
-	default:
-		return [head(tree), ...evaledTail];
+			if (evaledTail[1] == 1)
+				return evaledTail[0];
+		case '=':
+			if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+				return evaledTail[0] === evaledTail[1];
+			if (treeEquals(evaledTail[0], evaledTail[1]))
+				return true;
+		case '!=':
+			if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+				return evaledTail[0] !== evaledTail[1];
+			if (treeEquals(evaledTail[0], evaledTail[1]))
+				return false;
+		case '>':
+			if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+				return evaledTail[0] > evaledTail[1];
+		case '>=':
+			if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+				return evaledTail[0] >= evaledTail[1];
+		case '<':
+			if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+				return evaledTail[0] < evaledTail[1];
+		case '<=':
+			if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+				return evaledTail[0] <= evaledTail[1];
+		default:
+			return [head(tree), ...evaledTail];
 	}
 }
 
@@ -341,10 +341,10 @@ function evalFunctions(tree) {
 	}
 	var evaledTail = tail(tree).map(evalFunctions);
 	switch (head(tree)) {
-	case 'free':
-		return treeFree(evaledTail[0], evaledTail[1]);
-	default:
-		return [head(tree), ...evaledTail];
+		case 'free':
+			return treeFree(evaledTail[0], evaledTail[1]);
+		default:
+			return [head(tree), ...evaledTail];
 	}
 }
 
@@ -364,9 +364,7 @@ function treeEquals(a, b) {
 	return false;
 }
 
-var replacements = [];
-
-function evalToFixedPoint(tree) {
+function evalToFixedPoint(tree, replacements) {
 	let newTree;
 	let changeMade = true;
 	while (changeMade) {
@@ -374,7 +372,7 @@ function evalToFixedPoint(tree) {
 		// newest to oldest
 		for (let i = replacements.length - 1; i >= 0; i--) {
 			let [pattern, replacement, cond] = replacements[i];
-			newTree = simplify(findMatchAndReplace(pattern, tree, replacement, cond));
+			newTree = simplify(findMatchAndReplace(pattern, tree, replacement, cond, replacements));
 			if (!treeEquals(tree, newTree)) {
 				changeMade = true;
 				tree = newTree;
@@ -469,7 +467,7 @@ function expandOptionals(pattern, replacement, cond) {
 }
 
 
-function evalReplacements(tree) {
+function evalReplacements(tree, replacements) {
 	tree = simplify(tree);
 	if (head(tree) === 'define') {
 		for (let newReplacement of expandOptionals(tree[1], tree[2], tree[3])) {
@@ -485,7 +483,7 @@ function evalReplacements(tree) {
 	let changeMade = true;
 	while (changeMade) {
 		changeMade = false;
-		tree = evalToFixedPoint(tree);
+		tree = evalToFixedPoint(tree, replacements);
 		newTree = evalFunctions(tree);
 		if (!treeEquals(tree, newTree)) {
 			changeMade = true;

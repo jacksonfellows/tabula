@@ -114,3 +114,16 @@ function printRegressionTest() {
 	}
 	console.log(JSON.stringify(testCase, null, '\t'));
 }
+
+$("#title").on("focusin", function () {
+	$(this).addClass('mq-focused');
+}).on("focusout", function () {
+	$(this).removeClass('mq-focused')
+	$(this).css('border-color', 'transparent');
+}).on("mouseenter", function () {
+	$(this).css('border-color', 'gray');
+}).on("mouseleave", function () {
+	if (!$(this).hasClass('mq-focused')) {
+		$(this).css('border-color', 'transparent');
+	}
+});

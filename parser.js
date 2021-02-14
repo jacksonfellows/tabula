@@ -158,7 +158,7 @@ function addImplicitMuls(latex) {
 	var newLatex = [];
 	for (var i = 0; i < latex.length - 1; i++) {
 		newLatex.push(latex[i]);
-		if ((latex[i].type === 'literal' || latex[i].type === 'rparen' || latex[i].type === 'rbracket' || latex[i].type === 'optional') && (latex[i+1].type === 'literal' || latex[i+1].type === 'lparen')) {
+		if ((latex[i].type === 'literal' || latex[i].type === 'rparen' || latex[i].type === 'rbracket' || latex[i].type === 'rcurly' || latex[i].type === 'optional') && (latex[i+1].type === 'literal' || latex[i+1].type === 'lparen' || latex[i+1].type === 'lcurly')) {
 			newLatex.push(operatorToken('*'));
 		}
 	}

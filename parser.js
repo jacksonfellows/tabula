@@ -1,8 +1,8 @@
 function makeInp(s) {
 	var i = 0;
 	return {
-		peek: function() {
-			return s[i];
+		peek: function(offset = 0) {
+			return s[i + offset];
 		},
 		consume: function() {
 			return s[i++];
@@ -12,10 +12,6 @@ function makeInp(s) {
 
 function isDigit(c) {
 	return '0' <= c && c <= '9';
-}
-
-function isValidCommandChar(c) {
-	return !/[0-9 {}\\,-]/.test(c);
 }
 
 function isWhitespace(c) {
@@ -48,12 +44,16 @@ function parseLatex(s) {
 				// command
 				inp.consume();
 				var command = '';
-				while (inp.peek() && isValidCommandChar(inp.peek())) {
+				while (inp.peek() && inp.peek() !== '{' && inp.peek() !== '\\' && !isWhitespace(inp.peek()) && !isDigit(inp.peek())) {
 					var c = inp.consume();
 					command += c;
-					if (/[\[\](){}]/.test(c)) {
+					if (!isAlpha(c)) {
 						break;
 					}
+				}
+				if (inp.peek() === '\\' && (inp.peek(1) === '{' || inp.peek(1) === '}')) {
+					inp.consume();
+					command += inp.consume();
 				}
 				if (command === 'text') {
 					if (inp.consume() !== '{') {
@@ -145,6 +145,10 @@ function expandCommand(command, arguments) {
 		return [operatorToken(command)];
 	case '?':
 		return [operatorToken(command)];
+	case 'left{':
+		return [operatorToken(command)];
+	case 'right}':
+		return [operatorToken(command)];
 	default:
 		throw 'unsupported command: ' + command;
 	}
@@ -221,6 +225,10 @@ function operatorToken(op) {
 		return operatorForallToken();
 	case '?':
 		return operatorOptionalToken();
+	case 'left{':
+		return operatorLcurlyToken();
+	case 'right}':
+		return operatorRcurlyToken();
 	default:
 		throw 'unsupported operator: ' + op;
 	}
@@ -324,6 +332,37 @@ function operatorLbracketToken() {
 function operatorRbracketToken() {
 	return {
 		type: 'rbracket',
+		lbp: 0
+	};
+}
+
+function operatorLcurlyToken() {
+	return {
+		type: 'lcurly',
+		lbp: 0,
+		nud: function() {
+			let form = ['list'];
+			if (token.type !== 'rcurly') {
+				while (true) {
+					form.push(expression(0));
+					if (token.type !== 'comma') {
+						break;
+					}
+					token = next();
+				}
+			}
+			if (token.type !== 'rcurly') {
+				throw 'expecting closing }';
+			}
+			token = next();
+			return form;
+		}
+	};
+}
+
+function operatorRcurlyToken() {
+	return {
+		type: 'rcurly',
 		lbp: 0
 	};
 }

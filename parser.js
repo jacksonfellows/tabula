@@ -141,13 +141,7 @@ function expandCommand(command, arguments) {
 		return [literalToken(command)];
 	case '=': case 'ne': case '>': case 'ge': case '<': case 'le':
 		return [operatorToken({'=': '=', 'ne': '!=', '>': '>', 'ge': '>=', '<': '<', 'le': '<='}[command])];
-	case 'forall':
-		return [operatorToken(command)];
-	case '?':
-		return [operatorToken(command)];
-	case 'left{':
-		return [operatorToken(command)];
-	case 'right}':
+	case 'forall': case '?': case 'left{': case 'right}':
 		return [operatorToken(command)];
 	default:
 		throw 'unsupported command: ' + command;

@@ -137,7 +137,7 @@ function expandCommand(command, arguments) {
 		return [operatorToken(']')];
 	case 'equiv':
 		return [operatorToken('equiv')];
-	case 'ln': case 'log': case 'sin': case 'cos': case 'tan': case 'arcsin': case 'arccos': case 'arctan':
+	case 'ln': case 'log': case 'sin': case 'cos': case 'tan': case 'arcsin': case 'arccos': case 'arctan': case 'times':
 		return [literalToken(command)];
 	case '=': case 'ne': case '>': case 'ge': case '<': case 'le':
 		return [operatorToken({'=': '=', 'ne': '!=', '>': '>', 'ge': '>=', '<': '<', 'le': '<='}[command])];

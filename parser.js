@@ -44,7 +44,7 @@ function parseLatex(s) {
 				// command
 				inp.consume();
 				var command = '';
-				while (inp.peek() && inp.peek() !== '{' && inp.peek() !== '\\' && !isWhitespace(inp.peek()) && !isDigit(inp.peek())) {
+				while (inp.peek() && inp.peek() !== '{' && inp.peek() !== '\\' && !isWhitespace(inp.peek()) && !isDigit(inp.peek()) && inp.peek() !== "-") {
 					var c = inp.consume();
 					command += c;
 					if (!isAlpha(c)) {

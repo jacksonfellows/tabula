@@ -168,6 +168,16 @@ const TESTS = [
 			"in": "2-\\frac{1}{2}",
 			"out": "\\frac{3}{2}"
 		}
+	],
+	[
+		{
+			"in": "a\\equiv-1",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "a",
+			"out": "-1"
+		}
 	]
 ];
 

@@ -178,6 +178,12 @@ const TESTS = [
 			"in": "a",
 			"out": "-1"
 		}
+	],
+	[
+		{
+			"in": "a\\times b",
+			"out": "a\\times b"
+		}
 	]
 ];
 

@@ -137,11 +137,11 @@ function expandCommand(command, arguments) {
 		return [operatorToken(']')];
 	case 'equiv':
 		return [operatorToken('equiv')];
-	case 'ln': case 'log': case 'sin': case 'cos': case 'tan': case 'arcsin': case 'arccos': case 'arctan': case 'times':
+	case 'ln': case 'log': case 'sin': case 'cos': case 'tan': case 'arcsin': case 'arccos': case 'arctan':
 		return [literalToken(command)];
 	case '=': case 'ne': case '>': case 'ge': case '<': case 'le':
 		return [operatorToken({'=': '=', 'ne': '!=', '>': '>', 'ge': '>=', '<': '<', 'le': '<='}[command])];
-	case 'forall': case '?': case 'left{': case 'right}':
+	case 'forall': case '?': case 'left{': case 'right}': case 'times':
 		return [operatorToken(command)];
 	default:
 		throw 'unsupported command: ' + command;
@@ -223,6 +223,8 @@ function operatorToken(op) {
 		return operatorLcurlyToken();
 	case 'right}':
 		return operatorRcurlyToken();
+	case 'times':
+		return operatorCrossToken();
 	default:
 		throw 'unsupported operator: ' + op;
 	}
@@ -254,6 +256,15 @@ function operatorMulToken() {
 		lbp: 20,
 		led: function(left) {
 			return ['*', left, expression(20)];
+		}
+	};
+}
+
+function operatorCrossToken() {
+	return {
+		lbp: 21,
+		led: function(left) {
+			return ['cross', left, expression(20)];
 		}
 	};
 }

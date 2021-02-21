@@ -53,6 +53,8 @@ function printLatex(tree) {
 		return printLatex(tree[1]) + {'=': '=', '!=': '\\ne ', '>': '>', '>=': '\\ge ', '<': '<', '<=': '\\le '}[tree[0]] + printLatex(tree[2]);
 	case 'list':
 		return '\\left\\{' + tree.slice(1).map(printLatex).join(',') + '\\right\\}';
+	case 'cross':
+		return printLatex(tree[1]) + '\\times ' + printLatex(tree[2]);
 	default:
 		return '\\text{' + tree[0] + '}\\left[' + tree.slice(1).map(printLatex).join(',') + '\\right]';
 	}

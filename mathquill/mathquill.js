@@ -4112,6 +4112,7 @@ var Equality = P(BinaryOperator, function(_, super_) {
 LatexCmds['='] = Equality;
 
 LatexCmds['\u00d7'] = LatexCmds.times = bind(BinaryOperator, '\\times ', '&times;', '[x]');
+LatexCmds.cross = LatexCmds.times;
 
 LatexCmds['\u00f7'] = LatexCmds.div = LatexCmds.divide = LatexCmds.divides =
   bind(BinaryOperator,'\\div ','&divide;', '[/]');

@@ -4,7 +4,7 @@ var NOTEBOOK = {
 	inputs: [],
 	outputs: [],
 	replacements: []
-}
+};
 
 var config = {
 	spaceBehavesLikeTab: true,

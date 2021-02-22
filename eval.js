@@ -97,7 +97,7 @@ function loadNotebookFromFile(file) {
 		inputs: [],
 		outputs: [],
 		replacements: []
-	}
+	};
 	for (let cell of cells) {
 		addInputBox();
 		NOTEBOOK.inputs[NOTEBOOK.inputs.length - 1].latex(cell);
@@ -118,7 +118,7 @@ function printRegressionTest() {
 $("#title").on("focusin", function () {
 	$(this).addClass('mq-focused');
 }).on("focusout", function () {
-	$(this).removeClass('mq-focused')
+	$(this).removeClass('mq-focused');
 	$(this).css('border-color', 'transparent');
 }).on("mouseenter", function () {
 	$(this).css('border-color', 'gray');

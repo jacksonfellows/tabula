@@ -1,30 +1,32 @@
 <html>
-
-<head>
-  <title>Tabula</title>
-  <link rel="stylesheet" href="/mathquill/mathquill.css">
+  <head>
+    <title>Tabula</title>
+    <link rel="stylesheet" href="/mathquill/mathquill.css">
   </link>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
   <script src="/mathquill/mathquill.js"></script>
   <script src="/parser.js"></script>
   <script src="/matcher.js"></script>
   <script src="/printer.js"></script>
-</head>
+  </head>
 
-<body>
-  <h2>
-    <input type="text" style=" font-size: inherit; outline: none; border-color: transparent;" id="title"
-      class="mq-editable-field" value="Untitled Notebook"><br>
-  </h2>
-  <hr>
-  <div id="fields"></div>
-  <button type="button" onclick="addInputBox()">new cell</button>
-  <button type="button" onclick="updateAllOutputBoxes()">evaluate all cells</button>
-  <button type="button" onclick="saveNotebook()">save notebook</button>
-  <p id="parsed"></p>
-</body>
-<script src="/eval.js"></script>
-<script>
-setNotebookState({{ notebook_state | safe }});
-</script>
+  <body>
+    <h2>
+      <input type="text" style=" font-size: inherit; outline: none; border-color: transparent;" id="title"
+             class="mq-editable-field" value="Untitled Notebook"><br>
+    </h2>
+    <hr>
+    <div id="fields"></div>
+    <button type="button" onclick="addInputBox()">new cell</button>
+    <button type="button" onclick="updateAllOutputBoxes()">evaluate all cells</button>
+    <button type="button" onclick="saveNotebook()">save notebook</button>
+    <p id="parsed"></p>
+  </body>
+  <script src="/eval.js"></script>
+  <script>
+    setNotebookState({{ notebook_state | safe }});
+    if (NOTEBOOK.inputs.length == 0) {
+	    addInputBox();
+    }
+  </script>
 </html>

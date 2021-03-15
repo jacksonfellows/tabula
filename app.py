@@ -22,12 +22,13 @@ def notebooks():
 
 @app.route('/notebooks/<path:path>')
 def notebook(path):
-    try:
-        with open(f'notebooks/{path}.tabula') as f:
-            notebook_state = f.read()
-    except FileNotFoundError:
-        notebook_state = ''
+    with open(f'notebooks/{path}.tabula') as f:
+        notebook_state = f.read()
     return render_template('index.html', notebook_state=notebook_state)
+
+@app.route('/new')
+def new():
+    return render_template('index.html')
 
 @app.route('/test')
 def test():

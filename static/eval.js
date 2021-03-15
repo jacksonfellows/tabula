@@ -14,8 +14,6 @@ var config = {
 	autoCommands: 'pi theta forall equiv sqrt lambda neq cross'
 };
 
-addInputBox();
-
 function addInputBox() {
 	var id = NOTEBOOK.inputs.length;
 	$("#fields").append("<p><span id=\"I" + id + "\" style=\"width: 100%\"></span></p>",
@@ -80,6 +78,10 @@ function saveNotebook() {
 			console.log(status);
 		},
 	});
+	let newPathname = '/notebooks/' + getTitle();
+	if (window.location.pathname !== newPathname) {
+		window.location.pathname = newPathname;
+	}
 }
 
 function printRegressionTest() {

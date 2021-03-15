@@ -142,12 +142,24 @@ function* nGroupings(array, n) {
 	}
 }
 
+function noCaptures(tree) {
+	if (!Array.isArray(tree))
+		return true;
+	if (isCapture(tree))
+		return false;
+	return tail(tree).every(noCaptures);
+}
+
+function noMoreCaptures(list) {
+	return list.every(noCaptures);
+}
+
 function* listMatches(patternList, treeList, cond, replacements, captures) {
 	if (patternList.length == treeList.length) {
 		if (patternList.length == 0) {
 			yield captures;
 		} else {
-			for (let newCaptures of matches(head(patternList), head(treeList), cond, replacements, captures)) {
+			for (let newCaptures of matches(head(patternList), head(treeList), noMoreCaptures(tail(patternList)) ? cond : undefined, replacements, captures)) {
 				yield* listMatches(tail(patternList), tail(treeList), cond, replacements, newCaptures);
 			}
 		}

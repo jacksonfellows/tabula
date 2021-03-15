@@ -164,7 +164,7 @@ function* matches(pattern, tree, cond, replacements, captures = {}) {
 				yield captures;
 		} else {
 			let newCaptures = Object.assign({ [captureVar(pattern)]: tree }, captures);
-			if (cond === undefined || evalReplacements(replaceCaptures(cond, newCaptures), replacements) === true)
+			if (cond == undefined || evalReplacements(replaceCaptures(cond, newCaptures), replacements) === true)
 				yield newCaptures;
 		}
 	} else if (head(pattern) === head(tree)) {

@@ -2,13 +2,13 @@
 
 <head>
   <title>Tabula</title>
-  <link rel="stylesheet" href="mathquill/mathquill.css">
+  <link rel="stylesheet" href="/mathquill/mathquill.css">
   </link>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-  <script src="mathquill/mathquill.js"></script>
-  <script src="parser.js"></script>
-  <script src="matcher.js"></script>
-  <script src="printer.js"></script>
+  <script src="/mathquill/mathquill.js"></script>
+  <script src="/parser.js"></script>
+  <script src="/matcher.js"></script>
+  <script src="/printer.js"></script>
 </head>
 
 <body>
@@ -20,11 +20,11 @@
   <div id="fields"></div>
   <button type="button" onclick="addInputBox()">new cell</button>
   <button type="button" onclick="updateAllOutputBoxes()">evaluate all cells</button>
-  <button type="button" onclick="saveNotebook()">save cells</button>
-  <input type="file" id="getFile" style="display: none" accept=".tabula">
-  <button type="button" onclick="loadFile()">load file</button>
+  <button type="button" onclick="saveNotebook()">save notebook</button>
   <p id="parsed"></p>
 </body>
-<script src="eval.js"></script>
-
+<script src="/eval.js"></script>
+<script>
+setNotebookState({{ notebook_state | safe }});
+</script>
 </html>

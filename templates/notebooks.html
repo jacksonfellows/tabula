@@ -1,0 +1,12 @@
+<html>
+  <head>
+    <title>notebooks</title>
+  </head>
+  <body>
+    {% for notebook in notebooks %}
+    <a href="{{ notebook['href'] }}">{{ notebook['name'] }}</a></br>
+    {% endfor %}
+    <hr>
+    <a href="/notebooks/scratch">+</a>
+  </body>
+</html>

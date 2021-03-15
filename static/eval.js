@@ -41,14 +41,6 @@ function updateAllOutputBoxes() {
 	}
 }
 
-function download(content, fileName, contentType) {
-	var a = document.createElement('a');
-	var file = new Blob([content], { type: contentType });
-	a.href = URL.createObjectURL(file);
-	a.download = fileName;
-	a.click();
-}
-
 function setTitle(newTitle) {
 	$('#title').val(newTitle);
 }
@@ -57,51 +49,37 @@ function getTitle() {
 	return $('#title').val();
 }
 
-function saveNotebook() {
-	let notebookData = JSON.stringify({
+function getNotebookState() {
+	return {
 		title: getTitle(),
-		cells: NOTEBOOK.inputs.map(i => i.latex())
+		inputsLatex: NOTEBOOK.inputs.map(i => i.latex()),
+		outputsLatex: NOTEBOOK.outputs.map(o => o.latex()),
+		replacements: NOTEBOOK.replacements
+	};
+}
+
+function setNotebookState(state) {
+	if (state) {
+		setTitle(state.title);
+		for (let i = 0; i < state.inputsLatex.length; i++) {
+			addInputBox();
+			NOTEBOOK.inputs[i].latex(state.inputsLatex[i]);
+			NOTEBOOK.outputs[i].latex(state.outputsLatex[i]);
+		}
+		NOTEBOOK.replacements = state.replacements;
+	}
+}
+
+function saveNotebook() {
+	$.ajax({
+		type: 'POST',
+		contentType: 'application/json; charset=utf-8',
+		url: '/save',
+		data: JSON.stringify(getNotebookState()),
+		success: function (status) {
+			console.log(status);
+		},
 	});
-	download(notebookData, getTitle() + '.tabula', 'text/json');
-}
-
-function loadFile() {
-	$('#getFile').click();
-}
-
-$('#getFile').on('change', readFile);
-
-function readFile(e) {
-	var file = e.target.files[0];
-	if (!file) {
-		console.log('no file');
-		return;
-	}
-	var reader = new FileReader();
-	reader.onload = function (e) {
-		var contents = e.target.result;
-		loadNotebookFromFile(contents);
-	};
-	reader.readAsText(file);
-
-	$(e.target).prop('value', '');
-}
-
-function loadNotebookFromFile(file) {
-	console.log('loading file');
-	let newnotebook = JSON.parse(file);
-	setTitle(newnotebook.title);
-	let cells = newnotebook.cells;
-	$('#fields').empty();
-	NOTEBOOK = {
-		inputs: [],
-		outputs: [],
-		replacements: []
-	};
-	for (let cell of cells) {
-		addInputBox();
-		NOTEBOOK.inputs[NOTEBOOK.inputs.length - 1].latex(cell);
-	}
 }
 
 function printRegressionTest() {

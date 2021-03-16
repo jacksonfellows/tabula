@@ -76,12 +76,12 @@ function saveNotebook() {
 		data: JSON.stringify(getNotebookState()),
 		success: function (status) {
 			console.log(status);
+			let newPathname = '/notebooks/' + getTitle();
+			if (window.location.pathname !== newPathname) {
+				window.location.pathname = newPathname;
+			}
 		},
 	});
-	let newPathname = '/notebooks/' + getTitle();
-	if (window.location.pathname !== newPathname) {
-		window.location.pathname = newPathname;
-	}
 }
 
 function printRegressionTest() {

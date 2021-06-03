@@ -3,7 +3,9 @@ var MQ = MathQuill.getInterface(2);
 var NOTEBOOK = {
 	inputs: [],
 	outputs: [],
-	replacements: []
+	replacements: [],
+	imports: [],
+	importMap: {}
 };
 
 var config = {
@@ -13,6 +15,47 @@ var config = {
 	supSubsRequireOperand: true,
 	autoCommands: 'pi theta forall equiv sqrt lambda neq cross'
 };
+
+var VALID_IMPORTS = [];
+
+function setImports(imports) {
+	if (imports)
+		VALID_IMPORTS = imports;
+}
+
+function addSelectedImport(val) {
+	let id = NOTEBOOK.imports.length;
+	$('#imports').append('<p><select id="import' + id + '"' + (val in NOTEBOOK.importMap ? ' disabled' : '') + '>' + VALID_IMPORTS.filter(i => i === val || !(i in NOTEBOOK.importMap)).map(i => '<option value="' + i + '" ' + (val === i ? 'selected' : '') + '>' + i + '</option>').join('') + '</select><button onclick=doImport(' + id + ')>import</button></p>');
+	NOTEBOOK.imports.push($('#import' + id).val());
+}
+
+function addImport() {
+	let valid = VALID_IMPORTS.filter(i => !(i in NOTEBOOK.importMap));
+	if (valid.length == 0)
+		window.alert('no valid imports available');
+	else
+		addSelectedImport(valid[0]);
+}
+
+function doImport(id) {
+	let val = $('#import' + id).val();
+	NOTEBOOK.imports[id] = val;
+	$.ajax({
+		url: '/replacements/' + val,
+		dataType: 'json',
+		success: function(importReplacements) {
+			let oldLen = NOTEBOOK.replacements.length;
+			NOTEBOOK.replacements = NOTEBOOK.replacements.concat(importReplacements);
+			let newLen = NOTEBOOK.replacements.length;
+			NOTEBOOK.importMap[val] = [];
+			for (let i = oldLen; i < newLen; i++) {
+				NOTEBOOK.importMap[val].push(i);
+			}
+			$('#import' + id).attr('disabled', true);
+			console.log('imported notebook ' + val);
+		}
+	});
+}
 
 function addInputBox() {
 	var id = NOTEBOOK.inputs.length;
@@ -52,7 +95,9 @@ function getNotebookState() {
 		title: getTitle(),
 		inputsLatex: NOTEBOOK.inputs.map(i => i.latex()),
 		outputsLatex: NOTEBOOK.outputs.map(o => o.latex()),
-		replacements: NOTEBOOK.replacements
+		replacements: NOTEBOOK.replacements,
+		imports: NOTEBOOK.imports,
+		importMap: NOTEBOOK.importMap
 	};
 }
 
@@ -65,6 +110,10 @@ function setNotebookState(state) {
 			NOTEBOOK.outputs[i].latex(state.outputsLatex[i]);
 		}
 		NOTEBOOK.replacements = state.replacements;
+		NOTEBOOK.importMap = state.importMap;
+		state.imports.forEach(i => 
+			addSelectedImport(i)
+		);
 	}
 }
 
@@ -74,7 +123,7 @@ function saveNotebook() {
 		contentType: 'application/json; charset=utf-8',
 		url: '/save',
 		data: JSON.stringify(getNotebookState()),
-		success: function (status) {
+		success: function(status) {
 			console.log(status);
 			let newPathname = '/notebooks/' + getTitle();
 			if (window.location.pathname !== newPathname) {

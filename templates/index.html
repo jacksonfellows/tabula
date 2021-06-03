@@ -16,6 +16,9 @@
              class="mq-editable-field" value="Untitled Notebook"><br>
     </h2>
     <hr>
+    <div id="imports"></div>
+    <button type="button" onclick="addImport()">add import</button>
+    <hr>
     <div id="fields"></div>
     <button type="button" onclick="addInputBox()">new cell</button>
     <button type="button" onclick="updateAllOutputBoxes()">evaluate all cells</button>
@@ -24,6 +27,7 @@
   </body>
   <script src="/eval.js"></script>
   <script>
+    setImports({{ imports | safe }});
     setNotebookState({{ notebook_state | safe }});
     if (NOTEBOOK.inputs.length == 0) {
 	    addInputBox();

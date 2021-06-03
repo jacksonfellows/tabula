@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 
 app = Flask(__name__, static_url_path='', static_folder='static')
 
@@ -24,11 +24,17 @@ def notebooks():
 def notebook(path):
     with open(f'notebooks/{path}.tabula') as f:
         notebook_state = f.read()
-    return render_template('index.html', notebook_state=notebook_state)
+    return render_template('index.html', notebook_state=notebook_state, imports=json.dumps([Path(notebook).stem for notebook in glob.glob('notebooks/*.tabula') if Path(notebook).stem != path]))
+
+@app.route('/replacements/<path:path>')
+def replacements(path):
+    with open(f'notebooks/{path}.tabula') as f:
+        notebook_state = json.load(f)
+    return jsonify(notebook_state['replacements'])
 
 @app.route('/new')
 def new():
-    return render_template('index.html')
+    return render_template('index.html', imports=json.dumps([Path(notebook).stem for notebook in glob.glob('notebooks/*.tabula')]))
 
 @app.route('/test')
 def test():

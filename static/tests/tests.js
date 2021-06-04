@@ -235,6 +235,12 @@ const TESTS = [
 			"out": "\\text{h}\\left[5,6\\right]"
 		}
 	],
+	[
+		{
+			"in": "x^x",
+			"out": "x^x"
+		}
+	],
 ];
 
 

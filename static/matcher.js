@@ -351,37 +351,48 @@ function evalConstants(tree) {
 			let d = evaledTail[1] / x;
 			return d == 1 ? n : ['/', n, d];
 		}
-	case '^':
-		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1])) {
-			return evaledTail[0] ** evaledTail[1];
-		}
-		if (evaledTail[1] == 1)
+		if (evaledTail[1] === 1) {
 			return evaledTail[0];
+		}
+		break;
+	case '^':
+		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+			return evaledTail[0] ** evaledTail[1];
+		if (evaledTail[1] === 1)
+			return evaledTail[0];
+		break;
 	case '=':
 		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
 			return evaledTail[0] === evaledTail[1];
 		if (treeEquals(evaledTail[0], evaledTail[1]))
 			return true;
+		break;
 	case '!=':
 		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
 			return evaledTail[0] !== evaledTail[1];
 		if (treeEquals(evaledTail[0], evaledTail[1]))
 			return false;
+		break;
 	case '>':
 		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
 			return evaledTail[0] > evaledTail[1];
+		break;
 	case '>=':
 		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
 			return evaledTail[0] >= evaledTail[1];
+		break;
 	case '<':
 		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
 			return evaledTail[0] < evaledTail[1];
+		break;
 	case '<=':
 		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
 			return evaledTail[0] <= evaledTail[1];
+		break;
 	default:
 		return [head(tree), ...evaledTail];
 	}
+	return [head(tree), ...evaledTail];
 }
 
 function simplify(tree) {

@@ -184,7 +184,35 @@ const TESTS = [
 			"in": "a\\times b",
 			"out": "a\\times b"
 		}
-	]
+	],
+	[
+		{
+			"in": "\\left\\{x..\\right\\}\\equiv f\\left[x\\right]",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "\\left\\{1\\right\\}",
+			"out": "\\text{f}\\left[1\\right]"
+		},
+		{
+			"in": "\\left\\{a,b\\right\\}",
+			"out": "\\text{f}\\left[a,b\\right]"
+		},
+		{
+			"in": "\\left\\{1,2,3\\right\\}",
+			"out": "\\text{f}\\left[1,2,3\\right]"
+		}
+	],
+	[
+		{
+			"in": "f\\left[a..\\right]\\equiv g\\left[x,a,y\\right]",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "f\\left[1,2,3\\right]",
+			"out": "\\text{g}\\left[x,1,2,3,y\\right]"
+		}
+	],
 ];
 
 

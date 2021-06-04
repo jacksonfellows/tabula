@@ -16,7 +16,7 @@ function tail(a) {
 }
 
 function isCapture(pattern) {
-	return Array.isArray(pattern) && head(pattern) == '.';
+	return Array.isArray(pattern) && (head(pattern) == '.' || head(pattern) == '..');
 }
 
 function captureVar(capture) {
@@ -94,12 +94,22 @@ function replaceCaptures(replacement, captures) {
 			}
 			return replacement;
 		}
+		let newTree = [];
 		for (var i = 0; i < replacement.length; i++) {
-			replacement[i] = replaceCapturesRec(replacement[i], captures);
+			let x = replaceCapturesRec(replacement[i], captures);
+			if (x instanceof Spread) {
+				newTree.push(...x.tree);
+			} else {
+				newTree.push(x);
+			}
 		}
-		return replacement;
+		return newTree;
 	}
-	return replaceCapturesRec(deepCopyTree(replacement), captures);
+	let x = replaceCapturesRec(replacement, captures);
+	if (x instanceof Spread) {
+		throw 'invalid splicing of a spread capture';
+	}
+	return x;
 }
 
 function deepCopyTree(tree) {
@@ -166,6 +176,14 @@ function* listMatches(patternList, treeList, cond, replacements, captures) {
 	}
 }
 
+function isSpreadCapture(pattern) {
+	return Array.isArray(pattern) && head(pattern) == '..';
+}
+
+function Spread(tree) {
+	this.tree = tree;
+}
+
 function* matches(pattern, tree, cond, replacements, captures = {}) {
 	if (!Array.isArray(pattern) && !Array.isArray(tree)) {
 		if (pattern === tree)
@@ -175,12 +193,14 @@ function* matches(pattern, tree, cond, replacements, captures = {}) {
 			if (!matches(captures[captureVar(pattern)], tree, cond, replacements, captures).next().done)
 				yield captures;
 		} else {
-			let newCaptures = Object.assign({ [captureVar(pattern)]: tree }, captures);
+			let newCaptures = Object.assign({ [captureVar(pattern)]: isSpreadCapture(pattern) ? new Spread(tree) : tree }, captures);
 			if (cond == undefined || evalReplacements(replaceCaptures(cond, newCaptures), replacements) === true)
 				yield newCaptures;
 		}
 	} else if (head(pattern) === head(tree)) {
-		if (pattern.length == tree.length) { // need to be the same length to match this way
+		if (pattern.length == 2 && isSpreadCapture(pattern[1])) { // TODO: allow regular matches then spread
+			yield* matches(pattern[1], tail(tree), cond, replacements, captures);
+		} else if (pattern.length == tree.length) { // need to be the same length to match this way
 			if (hasAttribute(head(pattern), 'orderless')) {
 				for (let treeTailOrder of permutations(tail(tree))) {
 					yield* listMatches(tail(pattern), treeTailOrder, cond, replacements, captures);

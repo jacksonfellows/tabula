@@ -96,7 +96,11 @@ function parseLatex(s) {
 				var v = inp.consume();
 				if (inp.peek() == '.') {
 					inp.consume();
-					latex.push(literalToken(['.', v]));
+					if (inp.peek() == '.') {
+						inp.consume();
+						latex.push(literalToken(['..', v]));
+					} else
+						latex.push(literalToken(['.', v]));
 				} else {
 					latex.push(literalToken(v));
 				}

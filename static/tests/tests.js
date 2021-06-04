@@ -213,6 +213,28 @@ const TESTS = [
 			"out": "\\text{g}\\left[x,1,2,3,y\\right]"
 		}
 	],
+	[
+		{
+			"in": "f\\left[a.,b.\\right]\\equiv a+b",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "f\\left[3,6\\right]",
+			"out": "9"
+		},
+		{
+			"in": "g\\left[x..\\right]\\equiv h\\left[x\\right]\\forall f\\left[x\\right]>10",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "g\\left[5,5\\right]",
+			"out": "\\text{g}\\left[5,5\\right]"
+		},
+		{
+			"in": "g\\left[5,6\\right]",
+			"out": "\\text{h}\\left[5,6\\right]"
+		}
+	],
 ];
 
 

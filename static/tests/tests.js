@@ -241,6 +241,16 @@ const TESTS = [
 			"out": "x^x"
 		}
 	],
+	[
+		{
+			"in": "\\left\\{\\left\\{a,b\\right\\}:a\\in\\left\\{1,2,3\\right\\},b\\in\\left\\{1,2,3\\right\\},a\\le b\\right\\}",
+			"out": "\\left\\{\\left\\{1,1\\right\\},\\left\\{1,2\\right\\},\\left\\{1,3\\right\\},\\left\\{2,2\\right\\},\\left\\{2,3\\right\\},\\left\\{3,3\\right\\}\\right\\}"
+		},
+		{
+			"in": "\\left\\{a+b:a\\in\\left\\{1,2,3\\right\\},b\\in\\left\\{1,2,3\\right\\},a\\le b\\right\\}",
+			"out": "\\left\\{2,3,4,4,5,6\\right\\}"
+		}
+	],
 ];
 
 

@@ -145,7 +145,7 @@ function expandCommand(command, arguments) {
 		return [literalToken(command)];
 	case '=': case 'ne': case '>': case 'ge': case '<': case 'le':
 		return [operatorToken({'=': '=', 'ne': '!=', '>': '>', 'ge': '>=', '<': '<', 'le': '<='}[command])];
-	case 'forall': case '?': case 'left{': case 'right}': case 'times':
+	case 'forall': case '?': case 'left{': case 'right}': case 'times': case 'in':
 		return [operatorToken(command)];
 	default:
 		throw 'unsupported command: ' + command;
@@ -229,6 +229,10 @@ function operatorToken(op) {
 		return operatorRcurlyToken();
 	case 'times':
 		return operatorCrossToken();
+	case ':':
+		return operatorColonToken();
+	case 'in':
+		return operatorInToken();
 	default:
 		throw 'unsupported operator: ' + op;
 	}
@@ -345,6 +349,23 @@ function operatorRbracketToken() {
 	};
 }
 
+function operatorColonToken() {
+	return {
+		type: 'colon',
+		lbp: 0
+	};
+}
+
+function operatorInToken() {
+	return {
+		type: 'in',
+		lbp: 7,
+		led: function(left) {
+			return ['in', left, expression(6)];
+		}
+	};
+}
+
 function operatorLcurlyToken() {
 	return {
 		type: 'lcurly',
@@ -355,6 +376,21 @@ function operatorLcurlyToken() {
 				while (true) {
 					form.push(expression(0));
 					if (token.type !== 'comma') {
+						if (token.type === 'colon') {
+							form[0] = 'listcomp';
+							token = next();
+							while (true) {
+								form.push(expression(0));
+								if (token.type !== 'comma') {
+									break;
+								}
+								token = next();
+							}
+							if (token.type !== 'rcurly') {
+								throw 'expecting closing }';
+							}
+							return form;
+						}
 						break;
 					}
 					token = next();

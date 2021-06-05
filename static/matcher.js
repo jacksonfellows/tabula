@@ -407,6 +407,42 @@ function treeFree(tree, subtree) {
 	return tail(tree).every(sub => treeFree(sub, subtree));
 }
 
+function isList(tree) {
+	return Array.isArray(tree) && head(tree) == 'list';
+}
+
+function isIn(tree) {
+	return Array.isArray(tree) && head(tree) === 'in';
+}
+
+function listCompReady(listComp) {
+	return listComp.filter(isIn).every(x => isList(x[2]));
+}
+
+function* allCaptures(sources, captures = {}) {
+	if (sources.length == 0) {
+		yield captures;
+	} else {
+		for (let val of tail(sources[0][2])) {
+			captures[sources[0][1]] = val;
+			yield* allCaptures(tail(sources), captures);
+		}
+	}
+}
+
+function evalListComp(listComp) {
+	let expr = listComp[1];
+	let sources = [];
+	let conds = [];
+	listComp.slice(2).forEach(x => isIn(x) ? sources.push(x) : conds.push(x));
+	let newList = ['list'];
+	for (let captures of allCaptures(sources)) {
+		if (conds.every(cond => simplify(replaceCaptures(cond, captures)) === true))
+			newList.push(simplify(replaceCaptures(expr, captures)));
+	}
+	return newList;
+}
+
 function evalFunctions(tree) {
 	if (!Array.isArray(tree)) {
 		return tree;
@@ -416,10 +452,12 @@ function evalFunctions(tree) {
 	}
 	var evaledTail = tail(tree).map(evalFunctions);
 	switch (head(tree)) {
-		case 'free':
-			return treeFree(evaledTail[0], evaledTail[1]);
-		default:
-			return [head(tree), ...evaledTail];
+	case 'free':
+		return treeFree(evaledTail[0], evaledTail[1]);
+	case 'listcomp':            // use evaledTail?
+		return listCompReady(tree) ? evalListComp(tree) : tree;
+	default:
+		return [head(tree), ...evaledTail];
 	}
 }
 

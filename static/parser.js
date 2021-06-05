@@ -44,7 +44,7 @@ function parseLatex(s) {
 				// command
 				inp.consume();
 				var command = '';
-				while (inp.peek() && inp.peek() !== '{' && inp.peek() !== '\\' && !isWhitespace(inp.peek()) && !isDigit(inp.peek()) && inp.peek() !== "-") {
+				while (inp.peek() && inp.peek() !== '{' && inp.peek() !== '\\' && !isWhitespace(inp.peek()) && !isDigit(inp.peek()) && inp.peek() !== "-" && inp.peek() !== '+') {
 					var c = inp.consume();
 					command += c;
 					if (!isAlpha(c)) {
@@ -141,7 +141,7 @@ function expandCommand(command, arguments) {
 		return [operatorToken(']')];
 	case 'equiv':
 		return [operatorToken('equiv')];
-	case 'ln': case 'log': case 'sin': case 'cos': case 'tan': case 'arcsin': case 'arccos': case 'arctan':
+	case 'ln': case 'log': case 'sin': case 'cos': case 'tan': case 'arcsin': case 'arccos': case 'arctan': case 'Sigma':
 		return [literalToken(command)];
 	case '=': case 'ne': case '>': case 'ge': case '<': case 'le':
 		return [operatorToken({'=': '=', 'ne': '!=', '>': '>', 'ge': '>=', '<': '<', 'le': '<='}[command])];
@@ -245,6 +245,9 @@ function operatorAddToken() {
 		lbp: 10,
 		led: function(left) {
 			return ['+', left, expression(10)];
+		},
+		nud: function() {
+			return '+';
 		}
 	};
 }
@@ -266,6 +269,9 @@ function operatorMulToken() {
 		lbp: 20,
 		led: function(left) {
 			return ['*', left, expression(20)];
+		},
+		nud: function() {
+			return '*';
 		}
 	};
 }
@@ -404,6 +410,7 @@ function operatorLcurlyToken() {
 							if (token.type !== 'rcurly') {
 								throw 'expecting closing }';
 							}
+							token = next();
 							return form;
 						}
 						break;

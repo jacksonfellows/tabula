@@ -585,15 +585,15 @@ function expandOptionals(pattern, replacement, cond) {
 
 
 function evalReplacements(tree, replacements) {
-	tree = simplify(tree);
 	if (head(tree) === 'define') {
 		for (let newReplacement of expandOptionals(tree[1], tree[2], tree[3])) {
 			newReplacement[0] = simplify(newReplacement[0]);
-			newReplacement[1] = simplify(newReplacement[1]);
+			// newReplacement[1] = simplify(newReplacement[1]);
 			replacements.push(newReplacement);
 		}
 		return '\\text{stored definition}';
 	}
+	tree = simplify(tree);
 	let timeString = 'evalReplacements(' + JSON.stringify(tree) + ')';
 	console.time(timeString);
 	let newTree;

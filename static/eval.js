@@ -13,7 +13,7 @@ var config = {
 	leftRightIntoCmdGoes: 'up',
 	restrictMismatchedBrackets: true,
 	supSubsRequireOperand: true,
-	autoCommands: 'pi theta forall equiv sqrt lambda neq cross in'
+	autoCommands: 'pi theta forall equiv sqrt lambda neq cross in Sigma'
 };
 
 var VALID_IMPORTS = [];

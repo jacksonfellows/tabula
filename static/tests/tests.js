@@ -293,6 +293,24 @@ const TESTS = [
 			"out": "\\left\\{10a,10b,10c\\right\\}"
 		}
 	],
+	[
+		{
+			"in": "\\Sigma\\left[\\left\\{a..\\right\\}\\right]\\equiv+\\left[a\\right]",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "\\Sigma\\left[\\left\\{a,b,c\\right\\}\\right]",
+			"out": "a+b+c"
+		},
+		{
+			"in": "\\left\\{a..\\right\\}\\cdot\\left\\{b..\\right\\}\\equiv\\Sigma\\left[\\left\\{xy:x\\in\\left\\{a\\right\\}|y\\in\\left\\{b\\right\\}\\right\\}\\right]",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "\\left\\{a,b,c,d\\right\\}\\cdot\\left\\{w,x,y,z\\right\\}",
+			"out": "aw+bx+cy+dz"
+		}
+	],
 ];
 
 

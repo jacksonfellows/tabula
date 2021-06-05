@@ -251,6 +251,26 @@ const TESTS = [
 			"out": "\\left\\{2,3,4,4,5,6\\right\\}"
 		}
 	],
+	[
+		{
+			"in": "\\left\\{a..\\right\\}+\\left\\{b..\\right\\}\\equiv\\left\\{x+y:x\\in\\left\\{a\\right\\}|y\\in\\left\\{b\\right\\}\\right\\}",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "\\left\\{1,2,3\\right\\}+\\left\\{4,5,6\\right\\}",
+			"out": "\\left\\{5,7,9\\right\\}"
+		}
+	],
+	[
+		{
+			"in": "f\\left[\\left\\{a..\\right\\}\\right]\\equiv\\left\\{-x:x\\in\\left\\{a\\right\\}\\right\\}",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "f\\left[\\left\\{1,2,3\\right\\}\\right]",
+			"out": "\\left\\{-1,-2,-3\\right\\}"
+		}
+	],
 ];
 
 

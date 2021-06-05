@@ -233,6 +233,8 @@ function operatorToken(op) {
 		return operatorColonToken();
 	case 'in':
 		return operatorInToken();
+	case '|':
+		return operatorPipeToken();
 	default:
 		throw 'unsupported operator: ' + op;
 	}
@@ -359,9 +361,22 @@ function operatorColonToken() {
 function operatorInToken() {
 	return {
 		type: 'in',
-		lbp: 7,
+		lbp: 6,
 		led: function(left) {
-			return ['in', left, expression(6)];
+			return ['in', [left], [expression(6)]];
+		}
+	};
+}
+
+function operatorPipeToken() {
+	return {
+		type: 'pipe',
+		lbp: 5,
+		led: function(left) {
+			if (left[0] !== 'in')
+				throw '(currently) invalid use of |';
+			let right = expression(5);
+			return ['in', left[1].concat(right[1]), left[2].concat(right[2])];
 		}
 	};
 }

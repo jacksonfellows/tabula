@@ -416,15 +416,18 @@ function isIn(tree) {
 }
 
 function listCompReady(listComp) {
-	return listComp.filter(isIn).every(x => isList(x[2]));
+	return listComp.filter(isIn).every(x => x[2].every(isList));
 }
 
 function* allCaptures(sources, captures = {}) {
 	if (sources.length == 0) {
 		yield captures;
 	} else {
-		for (let val of tail(sources[0][2])) {
-			captures[sources[0][1]] = val;
+		let len = Math.min(...sources[0][2].map(x => x.length));
+		for (let i = 1; i < len; i++) {
+			for (let j = 0; j < sources[0][1].length; j++) {
+				captures[sources[0][1][j]] = sources[0][2][j][i];
+			}
 			yield* allCaptures(tail(sources), captures);
 		}
 	}

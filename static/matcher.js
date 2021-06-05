@@ -250,7 +250,7 @@ function flattenFlatOperators(tree) {
 
 function treeValue(tree) {
 	if (!Array.isArray(tree)) {
-		return tree;
+		return String(tree);    // ??
 	} else {
 		if (['+', '*'].includes(head(tree))) {
 			for (let i = 1; i < tree.length; i++) {
@@ -259,7 +259,7 @@ function treeValue(tree) {
 					return val;
 			}
 		}
-		return treeValue(tree[1]);
+		return treeValue(tree.length > 1 ? tree[1] : tree[0]);
 	}
 }
 
@@ -457,8 +457,9 @@ function evalFunctions(tree) {
 	switch (head(tree)) {
 	case 'free':
 		return treeFree(evaledTail[0], evaledTail[1]);
-	case 'listcomp':            // use evaledTail?
-		return listCompReady(tree) ? evalListComp(tree) : tree;
+	case 'listcomp':
+		let evaled = ['listcomp', ...evaledTail];
+		return listCompReady(evaled) ? evalListComp(evaled) : evaled;
 	default:
 		return [head(tree), ...evaledTail];
 	}

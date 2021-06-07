@@ -311,6 +311,20 @@ const TESTS = [
 			"out": "aw+bx+cy+dz"
 		}
 	],
+	[
+		{
+			"in": "\\Pi\\left[\\left\\{a..\\right\\}\\right]\\equiv\\cdot\\left[a\\right]",
+			"out": "\\text{stored definition}"
+		},
+		{
+			"in": "\\Pi\\left[\\left\\{a,b,c,d\\right\\}\\right]",
+			"out": "abcd"
+		},
+		{
+			"in": "\\Pi\\left[\\left\\{2,3,4\\right\\}\\right]",
+			"out": "24"
+		}
+	],
 ];
 
 

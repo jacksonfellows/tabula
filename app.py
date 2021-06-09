@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, redirect, url_for
 
 app = Flask(__name__, static_url_path='', static_folder='static')
 
@@ -15,6 +15,9 @@ import glob
 from pathlib import Path
 
 @app.route('/')
+def index():
+    return redirect(url_for('notebooks'))
+
 @app.route('/notebooks')
 def notebooks():
     notebooks = glob.glob('notebooks/*.tabula')

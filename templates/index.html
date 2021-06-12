@@ -8,29 +8,33 @@
   <script src="/parser.js"></script>
   <script src="/matcher.js"></script>
   <script src="/printer.js"></script>
+  <style>
+    #cells > *:not(:last-child) {
+        display: block;
+        margin-bottom: 20px;
+    }
+    .input {
+        width: 100%;
+    }
+    p { /* bad idea? */
+        margin: 5px;
+    }
+  </style>
   </head>
 
   <body>
     <h2>
-      <input type="text" style=" font-size: inherit; outline: none; border-color: transparent;" id="title"
-             class="mq-editable-field" value="Untitled Notebook"><br>
+      <input type="text" style=" font-size: inherit; outline: none; border-color: transparent;" id="title" class="mq-editable-field">
+      <br>
     </h2>
     <hr>
-    <div id="imports"></div>
-    <button type="button" onclick="addImport()">add import</button>
+    <div id="cells"></div>
     <hr>
-    <div id="fields"></div>
-    <button type="button" onclick="addInputBox()">new cell</button>
-    <button type="button" onclick="updateAllOutputBoxes()">evaluate all cells</button>
-    <button type="button" onclick="saveNotebook()">save notebook</button>
-    <p id="parsed"></p>
+    <button onclick="addCell()">add cell</button>
+    <button onclick="saveNotebook()">save notebook</button>
   </body>
-  <script src="/eval.js"></script>
   <script>
-    setImports({{ imports | safe }});
-    setNotebookState({{ notebook_state | safe }});
-    if (NOTEBOOK.inputs.length == 0) {
-	    addInputBox();
-    }
+    let NOTEBOOK = {{ notebook_state | safe }};
   </script>
+  <script src="/eval.js"></script>
 </html>

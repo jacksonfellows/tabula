@@ -583,16 +583,7 @@ function expandOptionals(pattern, replacement, cond) {
 	return expandOptionals(defaultPattern, defaultReplacement, cond).concat(expandOptionals(samePattern, replacement, cond));
 }
 
-
 function evalReplacements(tree, replacements) {
-	if (head(tree) === 'define') {
-		for (let newReplacement of expandOptionals(tree[1], tree[2], tree[3])) {
-			newReplacement[0] = simplify(newReplacement[0]);
-			// newReplacement[1] = simplify(newReplacement[1]);
-			replacements.push(newReplacement);
-		}
-		return '\\text{stored definition}';
-	}
 	tree = simplify(tree);
 	let timeString = 'evalReplacements(' + JSON.stringify(tree) + ')';
 	console.time(timeString);
@@ -600,7 +591,7 @@ function evalReplacements(tree, replacements) {
 	let changeMade = true;
 	while (changeMade) {
 		changeMade = false;
-		tree = evalToFixedPoint(tree, replacements);
+		tree = evalToFixedPoint(tree, Object.values(replacements));
 		newTree = evalFunctions(tree);
 		if (!treeEquals(tree, newTree)) {
 			changeMade = true;
@@ -609,4 +600,16 @@ function evalReplacements(tree, replacements) {
 	}
 	console.timeEnd(timeString);
 	return tree;
+}
+
+function addDefine(tree, replacements) {
+	let newKeys = [];
+	for (let newReplacement of expandOptionals(tree[1], tree[2], tree[3])) {
+		newReplacement[0] = simplify(newReplacement[0]);
+		// newReplacement[1] = simplify(newReplacement[1]);
+		let newKey = newId();
+		newKeys.push(newKey);
+		replacements[newKey] = newReplacement; // ??
+	}
+	return newKeys;
 }

@@ -27,17 +27,23 @@ def notebooks():
 def notebook(path):
     with open(f'notebooks/{path}.tabula') as f:
         notebook_state = f.read()
-    return render_template('index.html', notebook_state=notebook_state, imports=json.dumps([Path(notebook).stem for notebook in glob.glob('notebooks/*.tabula') if Path(notebook).stem != path]))
+    return render_template('index.html', notebook_state=notebook_state)
 
-@app.route('/replacements/<path:path>')
-def replacements(path):
-    with open(f'notebooks/{path}.tabula') as f:
-        notebook_state = json.load(f)
-    return jsonify(notebook_state['replacements'])
+# @app.route('/replacements/<path:path>')
+# def replacements(path):
+#     with open(f'notebooks/{path}.tabula') as f:
+#         notebook_state = json.load(f)
+#     return jsonify(notebook_state['replacements'])
+
+NEW_NOTEBOOK = {
+    'title': 'Untitled Notebook',
+    'cells': {},
+    'replacements': {}
+}
 
 @app.route('/new')
 def new():
-    return render_template('index.html', imports=json.dumps([Path(notebook).stem for notebook in glob.glob('notebooks/*.tabula')]))
+    return render_template('index.html', notebook_state=NEW_NOTEBOOK)
 
 @app.route('/test')
 def test():

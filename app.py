@@ -29,11 +29,11 @@ def notebook(path):
         notebook_state = f.read()
     return render_template('index.html', notebook_state=notebook_state)
 
-# @app.route('/replacements/<path:path>')
-# def replacements(path):
-#     with open(f'notebooks/{path}.tabula') as f:
-#         notebook_state = json.load(f)
-#     return jsonify(notebook_state['replacements'])
+@app.route('/replacements/<path:path>')
+def replacements(path):
+    with open(f'notebooks/{path}.tabula') as f:
+        notebook_state = json.load(f)
+    return jsonify(list(notebook_state['replacements'].values()))
 
 NEW_NOTEBOOK = {
     'title': 'Untitled Notebook',

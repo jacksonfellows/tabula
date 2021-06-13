@@ -25,6 +25,8 @@ function render(thing) {
 		elem = $('<span>' + thing.latex + '</span>');
 		MQ.StaticMath(elem[0]);
 		return elem;
+	case 'TextInput':
+		return $('<input type="text">').val(thing.text);
 	default:
 		throw 'unsupported type of thing: ' + thing.type;
 	}
@@ -37,13 +39,19 @@ function unrender(elem) {
 			latex: MQ(elem[0]).latex(),
 		};
 	}
+	if (elem.is('input') && elem.prop('type') === 'text') {
+		return {
+			type: 'TextInput',
+			text: elem.val(),
+		};
+	}
 	throw 'cannot unrender ' + elem;
 }
 
 function runCell(key) {
 	console.log('running cell ' + key);
 	let cell = NOTEBOOK.cells[key];
-	cell.input = unrender($('#input'+key).children(0)); // maybe do this onchange as well?
+	cell.input = unrender($('#input'+key).children(0)); // maybe do this on change as well?
 	switch (cell.type) {
 	case 'code':
 		if (cell.input.type !== 'LatexInput')
@@ -62,6 +70,26 @@ function runCell(key) {
 				latex: printLatex(evalReplacements(tree, NOTEBOOK.replacements))
 			};
 		}
+		break;
+	case 'import':
+		if (cell.input.type !== 'TextInput')
+			throw 'unsupported input type for import cells: ' + cell.input.type;
+		$.ajax({
+			url: '/replacements/' + cell.input.text,
+			dataType: 'json',
+			success: function(newReplacements) {
+				// remove old import
+				for (let key of cell.replacementKeys) {
+					delete NOTEBOOK.replacements[key];
+				}
+				for (let replacement of newReplacements) {
+					let key = newId();
+					NOTEBOOK.replacements[key] = replacement;
+					cell.replacementKeys.push(key);
+				}
+				console.log('imported ' + cell.input.text);
+			}
+		});
 		break;
 	default:
 		throw 'unsupported cell type ' + cell.type;
@@ -89,13 +117,26 @@ function renderCell(key) {
 	);
 }
 
-function addCell() {
+function addCodeCell() {
 	let key = newId();
 	NOTEBOOK.cells[key] = {
 		type: 'code',
 		input: {
 			type: 'LatexInput',
 			latex: ''
+		},
+		replacementKeys: [],
+	};
+	$('#cells').append(renderCell(key));
+}
+
+function addImportCell() {
+	let key = newId();
+	NOTEBOOK.cells[key] = {
+		type: 'import',
+		input: {
+			type: 'TextInput',
+			text: ''
 		},
 		replacementKeys: [],
 	};
@@ -110,7 +151,7 @@ for (let key of Object.keys(NOTEBOOK.cells)) {
 }
 
 if (Object.keys(NOTEBOOK.cells).length === 0) {
-	addCell();
+	addCodeCell();
 }
 
 // stuff to make title look good

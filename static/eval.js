@@ -106,6 +106,8 @@ function deleteCell(key) {
 		}
 	}
 	$('#cell' + key).remove();
+	delete NOTEBOOK.cells[key];
+	NOTEBOOK.cellOrder.splice(NOTEBOOK.cellOrder.indexOf(key), 1);
 }
 
 function renderCell(key) {
@@ -158,7 +160,8 @@ $('#cells').sortable({
 	axis: 'y',
 	update: function(event, ui) {
 		updateCellOrder();
-	}
+	},
+	cancel: '.input'
 });
 
 $('#cells').disableSelection(); // ??

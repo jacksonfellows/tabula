@@ -38,6 +38,7 @@ def replacements(path):
 NEW_NOTEBOOK = {
     'title': 'Untitled Notebook',
     'cells': {},
+    'cellOrder': [],
     'replacements': {}
 }
 

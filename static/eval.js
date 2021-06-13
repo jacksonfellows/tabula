@@ -18,15 +18,15 @@ function render(thing) {
 	let elem;
 	switch (thing.type) {
 	case 'LatexInput':
-		elem = $('<span class="input">' + thing.latex + '</span>');
+		elem = $('<span class="input mq">' + thing.latex + '</span>');
 		MQ.MathField(elem[0]);
 		return elem;
 	case 'LatexOutput':
-		elem = $('<span>' + thing.latex + '</span>');
+		elem = $('<span class="mq">' + thing.latex + '</span>');
 		MQ.StaticMath(elem[0]);
 		return elem;
 	case 'TextInput':
-		return $('<input type="text">').val(thing.text);
+		return $('<input "type="text">').val(thing.text);
 	default:
 		throw 'unsupported type of thing: ' + thing.type;
 	}
@@ -110,11 +110,17 @@ function deleteCell(key) {
 
 function renderCell(key) {
 	let cell = NOTEBOOK.cells[key];
-	return $('<div id="cell' + key + '"></div>').append(
+	return $('<div id="cell' + key + '" class="cell"></div>').append(
 		$('<p id="input' + key + '"></p>').append(render(cell.input)),
 		$('<p id="output' + key + '"></p>').append(render(cell.output)),
 		$('<p><button onclick=runCell("' + key + '")>evaluate cell</button><button onclick=deleteCell("' + key + '")>delete cell</button></p>'),
 	);
+}
+
+function appendCell(key) {
+	$('#cells').append(renderCell(key));
+	if (!(key in NOTEBOOK.cells))
+		NOTEBOOK.cellOrder.push(key);
 }
 
 function addCodeCell() {
@@ -127,7 +133,7 @@ function addCodeCell() {
 		},
 		replacementKeys: [],
 	};
-	$('#cells').append(renderCell(key));
+	appendCell(key);
 }
 
 function addImportCell() {
@@ -140,14 +146,27 @@ function addImportCell() {
 		},
 		replacementKeys: [],
 	};
-	$('#cells').append(renderCell(key));
+	appendCell(key);
+}
+
+function updateCellOrder() {
+	NOTEBOOK.cellOrder = $('#cells').sortable('toArray').map(x => x.substring(4)); // remove cell prefix from id
 }
 
 // display NOTEBOOK
+$('#cells').sortable({
+	axis: 'y',
+	update: function(event, ui) {
+		updateCellOrder();
+	}
+});
+
+$('#cells').disableSelection(); // ??
+
 $('#title').val(NOTEBOOK.title);
 
-for (let key of Object.keys(NOTEBOOK.cells)) {
-	$('#cells').append(renderCell(key));
+for (let key of NOTEBOOK.cellOrder) {
+	appendCell(key);
 }
 
 if (Object.keys(NOTEBOOK.cells).length === 0) {

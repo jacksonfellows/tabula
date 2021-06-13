@@ -100,7 +100,7 @@ function runCell(key) {
 function deleteCell(key) {
 	console.log('deleting cell ' + key);
 	let cell = NOTEBOOK.cells[key];
-	if (cell.type === 'code') {
+	if (cell.type === 'code' || cell.type === 'import') {
 		for (let key of cell.replacementKeys) {
 			delete NOTEBOOK.replacements[key];
 		}

@@ -164,8 +164,6 @@ $('#cells').sortable({
 	cancel: '.input'
 });
 
-$('#cells').disableSelection(); // ??
-
 $('#title').val(NOTEBOOK.title);
 
 for (let key of NOTEBOOK.cellOrder) {

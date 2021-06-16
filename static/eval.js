@@ -121,7 +121,7 @@ function renderCell(key) {
 
 function appendCell(key) {
 	$('#cells').append(renderCell(key));
-	if (!(key in NOTEBOOK.cells))
+	if (!NOTEBOOK.cellOrder.includes(key))
 		NOTEBOOK.cellOrder.push(key);
 }
 

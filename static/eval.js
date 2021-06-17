@@ -18,17 +18,17 @@ function render(thing) {
 	let elem;
 	switch (thing.type) {
 	case 'LatexInput':
-		elem = $('<span class="input mq">' + thing.latex + '</span>');
+		elem = $('<span class="cancel wide mq">' + thing.latex + '</span>');
 		MQ.MathField(elem[0]);
 		return elem;
 	case 'LatexOutput':
-		elem = $('<span class="mq">' + thing.latex + '</span>');
+		elem = $('<span class="cancel mq">' + thing.latex + '</span>');
 		MQ.StaticMath(elem[0]);
 		return elem;
 	case 'TextInput':
-		return $('<input "type="text">').val(thing.text);
+		return $('<input class="cancel" "type="text">').val(thing.text);
 	case 'DesmosGraph':
-		elem = $('<div class="input" style="width: 600px; height: 400px;"></div>');
+		elem = $('<div class="cancel" style="width: 600px; height: 400px;"></div>');
 		let calculator = Desmos.GraphingCalculator(elem[0], {
 			expressions: false,
 		});
@@ -192,7 +192,7 @@ $('#cells').sortable({
 	update: function(event, ui) {
 		updateCellOrder();
 	},
-	cancel: '.input',
+	cancel: '.cancel',
 });
 
 $('#title').val(NOTEBOOK.title);

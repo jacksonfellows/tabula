@@ -143,9 +143,9 @@ function expandCommand(command, arguments) {
 		return [operatorToken('equiv')];
 	case 'ln': case 'log': case 'sin': case 'cos': case 'tan': case 'arcsin': case 'arccos': case 'arctan': case 'Sigma': case 'Pi':
 		return [literalToken(command)];
-	case '=': case 'ne': case '>': case 'ge': case '<': case 'le':
-		return [operatorToken({'=': '=', 'ne': '!=', '>': '>', 'ge': '>=', '<': '<', 'le': '<='}[command])];
-	case 'forall': case '?': case 'left{': case 'right}': case 'times': case 'in':
+	case '=': case 'ne': case '>': case 'ge': case '<': case 'le': case 'doteq':
+		return [operatorToken({'=': '=', 'ne': '!=', '>': '>', 'ge': '>=', '<': '<', 'le': '<=', 'doteq': 'same'}[command])];
+	case 'forall': case '?': case 'left{': case 'right}': case 'times': case 'in': case 'neg':
 		return [operatorToken(command)];
 	default:
 		throw 'unsupported command: ' + command;
@@ -217,7 +217,7 @@ function operatorToken(op) {
 		return operatorCommaToken();
 	case 'equiv':
 		return operatorEquivToken();
-	case '=': case '!=': case '>': case '>=': case '<': case '<=':
+	case '=': case '!=': case '>': case '>=': case '<': case '<=': case 'same':
 		return operatorCompToken(op);
 	case 'forall':
 		return operatorForallToken();
@@ -486,7 +486,7 @@ function operatorCompToken(comp) {
 	return {
 		lbp: 7,
 		led: function(left) {
-			if (Array.isArray(left) && ['=', '!=', '>', '>=', '<', '<='].includes(left[0])) {
+			if (Array.isArray(left) && ['=', '!=', '>', '>=', '<', '<=', 'same'].includes(left[0])) {
 				throw 'cannot chain comparisons';
 			}
 			return [comp, left, expression(7)];

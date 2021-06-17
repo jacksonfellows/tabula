@@ -461,6 +461,10 @@ function evalFunctions(tree) {
 	switch (head(tree)) {
 	case 'free':
 		return treeFree(evaledTail[0], evaledTail[1]);
+	case 'head':
+		return Array.isArray(evaledTail[0]) && evaledTail[0][0];
+	case 'same':
+		return treeEquals(evaledTail[0], evaledTail[1]);
 	case 'listcomp':
 		let evaled = ['listcomp', ...evaledTail];
 		return listCompReady(evaled) ? evalListComp(evaled) : evaled;

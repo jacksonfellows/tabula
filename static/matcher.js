@@ -465,6 +465,8 @@ function evalFunctions(tree) {
 		return Array.isArray(evaledTail[0]) && evaledTail[0][0];
 	case 'same':
 		return treeEquals(evaledTail[0], evaledTail[1]);
+	case 'number':
+		return !isNaN(evaledTail[0]);
 	case 'listcomp':
 		let evaled = ['listcomp', ...evaledTail];
 		return listCompReady(evaled) ? evalListComp(evaled) : evaled;

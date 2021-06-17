@@ -62,3 +62,15 @@ function printLatex(tree) {
 		return '\\text{' + tree[0] + '}\\left[' + tree.slice(1).map(printLatex).join(',') + '\\right]';
 	}
 }
+
+const operators = ['cos', 'sin'];
+const infix = ['+', '*', '=', '>', '>=', '<', '<='];
+
+function printDesmosLatex(tree) {
+	if (!Array.isArray(tree)) return operators.includes(tree) ? '\\' + tree : String(tree);
+	if (infix.includes(tree[0])) return tree.slice(1).map(x => '\\left(' + printDesmosLatex(x) + '\\right)').join(printDesmosLatex(tree[0]));
+	if (tree[0] === '/') return '\\frac{' + printDesmosLatex(tree[1]) + '}{' + printDesmosLatex(tree[2]) + '}';
+	if (tree[0] === '^') return '{' + printDesmosLatex(tree[1]) + '}^{' + printDesmosLatex(tree[2]) + '}';
+	if (tree[0] === 'list') return '\\left[' + tree.slice(1).map(x => printDesmosLatex(x)).join(',') + '\\right]';
+	return printDesmosLatex(tree[0]) + '\\left(' + tree.slice(1).map(printDesmosLatex).join(',') + '\\right)';
+}

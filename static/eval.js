@@ -27,6 +27,15 @@ function render(thing) {
 		return elem;
 	case 'TextInput':
 		return $('<input "type="text">').val(thing.text);
+	case 'DesmosGraph':
+		elem = $('<div class="input" style="width: 600px; height: 400px;"></div>');
+		let calculator = Desmos.GraphingCalculator(elem[0], {
+			expressions: false,
+		});
+		calculator.setExpression({
+			latex: thing.latex,
+		});
+		return elem;
 	default:
 		throw 'unsupported type of thing: ' + thing.type;
 	}
@@ -70,6 +79,16 @@ function runCell(key) {
 				latex: printLatex(evalReplacements(tree, NOTEBOOK.replacements))
 			};
 		}
+		break;
+	case 'graph':
+		if (cell.input.type !== 'LatexInput')
+			throw 'unsupported input type for graph cells: ' + cell.input.type;
+		let evaled = printDesmosLatex(evalReplacements(parse(cell.input.latex), NOTEBOOK.replacements));
+		console.log('rendering ' + evaled + ' in desmos');
+		cell.output = {
+			type: 'DesmosGraph',
+			latex: evaled,
+		};
 		break;
 	case 'import':
 		if (cell.input.type !== 'TextInput')
@@ -138,6 +157,18 @@ function addCodeCell() {
 	appendCell(key);
 }
 
+function addGraphCell() {
+	let key = newId();
+	NOTEBOOK.cells[key] = {
+		type: 'graph',
+		input: {
+			type: 'LatexInput',
+			latex: '',
+		},
+	};
+	appendCell(key);
+}
+
 function addImportCell() {
 	let key = newId();
 	NOTEBOOK.cells[key] = {
@@ -161,7 +192,7 @@ $('#cells').sortable({
 	update: function(event, ui) {
 		updateCellOrder();
 	},
-	cancel: '.input'
+	cancel: '.input',
 });
 
 $('#title').val(NOTEBOOK.title);

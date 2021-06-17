@@ -235,6 +235,8 @@ function operatorToken(op) {
 		return operatorInToken();
 	case '|':
 		return operatorPipeToken();
+	case 'neg':
+		return operatorNegToken();
 	default:
 		throw 'unsupported operator: ' + op;
 	}
@@ -260,6 +262,14 @@ function operatorSubToken() {
 		},
 		led: function(left) {
 			return ['+', left, ['*', -1, expression(10)]];
+		}
+	};
+}
+
+function operatorNegToken() {
+	return {
+		nud: function() {
+			return ['not', expression(27)];
 		}
 	};
 }

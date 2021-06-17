@@ -55,6 +55,9 @@ function printLatex(tree) {
 		return '\\left\\{' + tree.slice(1).map(printLatex).join(',') + '\\right\\}';
 	case 'cross':
 		return printLatex(tree[1]) + '\\times ' + printLatex(tree[2]);
+	case 'not':
+		// only worry about stuff that would actually be under a not (e.g. don't worry about + expressions)
+		return '\\not ' + (Array.isArray(tree[1]) && ['=','!=','>','>=','<','<='].includes(tree[1][0]) ? ('\\left(' + printLatex(tree[1]) + '\\right)') : printLatex(tree[1]));
 	default:
 		return '\\text{' + tree[0] + '}\\left[' + tree.slice(1).map(printLatex).join(',') + '\\right]';
 	}

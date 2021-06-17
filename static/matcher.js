@@ -389,6 +389,10 @@ function evalConstants(tree) {
 		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
 			return evaledTail[0] <= evaledTail[1];
 		break;
+	case 'not':
+		if (typeof evaledTail[0] === 'boolean')
+			return !evaledTail[0];
+		break;
 	default:
 		return [head(tree), ...evaledTail];
 	}

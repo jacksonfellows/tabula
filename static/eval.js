@@ -146,7 +146,7 @@ function renderCell(key) {
 	return $('<div id="cell' + key + '" class="cell"></div>').append(
 		$('<p id="input' + key + '"></p>').append(render(cell.input, key)),
 		$('<p id="output' + key + '"></p>').append(render(cell.output, key)),
-		$('<p><button onclick=runCell("' + key + '")>evaluate cell</button><button onclick=deleteCell("' + key + '")>delete cell</button></p>'),
+		$('<p><button onclick=runCell("' + key + '")>evaluate cell</button><button onclick=deleteCell("' + key + '")>delete cell</button><span style="float: right;">' + cell.type + '</span></p>'),
 	);
 }
 

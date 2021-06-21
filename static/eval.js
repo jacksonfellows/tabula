@@ -13,7 +13,9 @@ MQ.config(MQ_CONFIG);
 // new unique id (stupid)
 let newId = _ => Math.random().toString(36).substring(2);
 
-function render(thing) {
+let calculators = {};
+
+function render(thing, key, oldElem) {
 	if (!thing) return $('<span></span>');
 	let elem;
 	switch (thing.type) {
@@ -28,11 +30,21 @@ function render(thing) {
 	case 'TextInput':
 		return $('<input class="cancel" "type="text">').val(thing.text);
 	case 'DesmosGraph':
+		if (key in calculators) {
+			let calculator = calculators[key];
+			calculator.setExpression({
+				id: key,
+				latex: thing.latex
+			});
+			return oldElem;
+		}
 		elem = $('<div class="cancel" style="width: 600px; height: 400px;"></div>');
 		let calculator = Desmos.GraphingCalculator(elem[0], {
 			expressions: false,
 		});
+		calculators[key] = calculator;
 		calculator.setExpression({
+			id: key,
 			latex: thing.latex,
 		});
 		return elem;
@@ -113,7 +125,7 @@ function runCell(key) {
 	default:
 		throw 'unsupported cell type ' + cell.type;
 	}
-	$('#output'+key).children(0).replaceWith(render(cell.output));
+	$('#output'+key).children(0).replaceWith(render(cell.output, key, $('#output'+key).children(0)));
 }
 
 function deleteCell(key) {
@@ -132,8 +144,8 @@ function deleteCell(key) {
 function renderCell(key) {
 	let cell = NOTEBOOK.cells[key];
 	return $('<div id="cell' + key + '" class="cell"></div>').append(
-		$('<p id="input' + key + '"></p>').append(render(cell.input)),
-		$('<p id="output' + key + '"></p>').append(render(cell.output)),
+		$('<p id="input' + key + '"></p>').append(render(cell.input, key)),
+		$('<p id="output' + key + '"></p>').append(render(cell.output, key)),
 		$('<p><button onclick=runCell("' + key + '")>evaluate cell</button><button onclick=deleteCell("' + key + '")>delete cell</button></p>'),
 	);
 }

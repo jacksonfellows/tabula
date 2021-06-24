@@ -7,43 +7,65 @@ function hasAttribute(f, attribute) {
 	return functionAttributes[f] && functionAttributes[f].includes(attribute);
 }
 
-function head(a) {
-	return a[0];
-}
-
 function tail(a) {
 	return a.slice(1);
 }
 
 function isCapture(pattern) {
-	return Array.isArray(pattern) && (head(pattern) == '.' || head(pattern) == '..');
+	return Array.isArray(pattern) && (pattern[0] == '.' || pattern[0] == '..');
 }
 
-function captureVar(capture) {
-	return capture[1];
+function hasMatch(pattern, tree, cond, replacements) {
+	return !matches(pattern, tree, cond, replacements).next().done;
+}
+
+function* combinations(arrs, offset = 0) {
+	if (arrs.length - offset === 0) {
+		yield [];
+	} else {
+		for (let combination of combinations(arrs, offset + 1)) {
+			for (let i = 0; i < arrs[offset].length; i++) {
+				yield arrs[offset].slice(i,i+1).concat(combination);
+			}
+		}
+	}
 }
 
 function findMatchAndReplace(pattern, tree, replacement, cond, replacements) {
 	function findMatchAndReplaceRec(pattern, tree, replacement, cond) {
+		// match on same level
 		for (let captures of matches(pattern, tree, cond, replacements)) { // max 1 iteration
 			return replaceCaptures(replacement, captures);
 		}
-		if (Array.isArray(pattern) && Array.isArray(tree) && head(pattern) === head(tree) && hasAttribute(head(pattern), 'flat') && pattern.length < tree.length) {
-			if (hasAttribute(head(pattern), 'orderless')) {
-				for (let perm of permutations(tail(tree))) {
-					for (let start = 0; start < perm.length; start++) {
-						for (let end = start + 1; end <= perm.length; end++) {
-							if (start == 0 && end == perm.length) {
-								continue; // avoid infinite recursion
+		// nested
+		if (Array.isArray(pattern) && Array.isArray(tree) && pattern[0] === tree[0] && hasAttribute(pattern[0], 'flat') && pattern.length < tree.length) {
+			if (hasAttribute(pattern[0], 'orderless')) {
+				if (!tail(pattern).some(isCapture)) {
+					let ms = tail(pattern).map(p => tail(tree).map((t,i)=>i).filter(i => hasMatch(p, tree[i], cond, replacements)));
+					for (let combination of combinations(ms)) {
+						if (combination.length === (new Set(combination)).size) {
+							let treeList = combination.map(i => tree[i]);
+							for (let captures of listMatches(tail(pattern), treeList, cond, replacements, {})) {
+								return [...tree[0], replaceCaptures(replacement, captures), ...tree.filter((t,i) => i !== 0 && !combination.includes(i))];
 							}
-							if (end - start == 1 && hasAttribute(head(pattern), 'oneIdentity')) {
-								continue; // will be covered later
-							}
-							let subtree = [head(pattern), ...perm.slice(start, end)];
-							let newTree = findMatchAndReplaceRec(pattern, subtree, replacement, cond);
-							if (newTree !== null) {
-								perm.splice(start, end - start, newTree);
-								return [head(pattern), ...perm];
+						}
+					}
+				} else {
+					for (let perm of permutations(tail(tree))) {
+						for (let start = 0; start < perm.length; start++) {
+							for (let end = start + 1; end <= perm.length; end++) {
+								if (start == 0 && end == perm.length) {
+									continue; // avoid infinite recursion
+								}
+								if (end - start == 1 && hasAttribute(pattern[0], 'oneIdentity')) {
+									continue; // will be covered later
+								}
+								let subtree = [pattern[0], ...perm.slice(start, end)];
+								let newTree = findMatchAndReplaceRec(pattern, subtree, replacement, cond);
+								if (newTree !== null) {
+									perm.splice(start, end - start, newTree);
+									return [pattern[0], ...perm];
+								}
 							}
 						}
 					}
@@ -54,10 +76,10 @@ function findMatchAndReplace(pattern, tree, replacement, cond, replacements) {
 						if (start == 0 && end == tree.length - 1) {
 							continue; // avoid infinite recursion
 						}
-						if (end - start == 1 && hasAttribute(head(pattern), 'oneIdentity')) {
+						if (end - start == 1 && hasAttribute(pattern[0], 'oneIdentity')) {
 							continue; // will be covered later
 						}
-						let subtree = [head(pattern), ...tree.slice(start + 1, end + 1)];
+						let subtree = [pattern[0], ...tree.slice(start + 1, end + 1)];
 						let newTree = findMatchAndReplaceRec(pattern, subtree, replacement, cond);
 						if (newTree !== null) {
 							tree.splice(start + 1, end - start, newTree);
@@ -169,7 +191,7 @@ function* listMatches(patternList, treeList, cond, replacements, captures) {
 		if (patternList.length == 0) {
 			yield captures;
 		} else {
-			for (let newCaptures of matches(head(patternList), head(treeList), noMoreCaptures(tail(patternList)) ? cond : undefined, replacements, captures)) {
+			for (let newCaptures of matches(patternList[0], treeList[0], noMoreCaptures(tail(patternList)) ? cond : undefined, replacements, captures)) {
 				yield* listMatches(tail(patternList), tail(treeList), cond, replacements, newCaptures);
 			}
 		}
@@ -177,7 +199,7 @@ function* listMatches(patternList, treeList, cond, replacements, captures) {
 }
 
 function isSpreadCapture(pattern) {
-	return Array.isArray(pattern) && head(pattern) == '..';
+	return Array.isArray(pattern) && pattern[0] == '..';
 }
 
 function Spread(tree) {
@@ -185,40 +207,50 @@ function Spread(tree) {
 }
 
 function* matches(pattern, tree, cond, replacements, captures = {}) {
-	if (!Array.isArray(pattern) && !Array.isArray(tree)) {
-		if (pattern === tree)
-			yield captures;
+	if (treeEquals(pattern, tree)) {
+		yield captures;
 	} else if (isCapture(pattern)) {
-		if (captures[captureVar(pattern)]) {
-			if (!matches(captures[captureVar(pattern)], tree, cond, replacements, captures).next().done)
+		if (pattern[1] in captures) {
+			if (!matches(captures[pattern[1]], tree, cond, replacements, captures).next().done) // ??
 				yield captures;
 		} else {
-			let newCaptures = Object.assign({ [captureVar(pattern)]: isSpreadCapture(pattern) ? new Spread(tree) : tree }, captures);
-			if (cond == undefined || evalReplacements(replaceCaptures(cond, newCaptures), replacements) === true)
+			let newCaptures = Object.assign({ [pattern[1]]: isSpreadCapture(pattern) ? new Spread(tree) : tree }, captures);
+			// keep cond === null?
+			if (cond === undefined || cond === null || evalReplacements(replaceCaptures(cond, newCaptures), replacements) === true)
 				yield newCaptures;
 		}
-	} else if (head(pattern) === head(tree)) {
+	} else if (Array.isArray(pattern) && Array.isArray(tree) && pattern[0] === tree[0]) {
 		if (pattern.length == 2 && isSpreadCapture(pattern[1])) { // TODO: allow regular matches then spread
 			yield* matches(pattern[1], tail(tree), cond, replacements, captures);
 		} else if (pattern.length == tree.length) { // need to be the same length to match this way
-			if (hasAttribute(head(pattern), 'orderless')) {
+			if (hasAttribute(pattern[0], 'orderless')) {
 				for (let treeTailOrder of permutations(tail(tree))) {
 					yield* listMatches(tail(pattern), treeTailOrder, cond, replacements, captures);
 				}
 			} else {
 				yield* listMatches(tail(pattern), tail(tree), cond, replacements, captures);
 			}
-		} else if (pattern.length < tree.length && hasAttribute(head(pattern), 'flat')) {
-			if (hasAttribute(head(pattern), 'orderless')) {
-				for (let perm of permutations(tail(tree))) {
-					for (let tailGrouping of nGroupings(perm, pattern.length - 1)) {
-						tailGrouping = tailGrouping.map(x => x.length == 1 && hasAttribute(head(pattern), 'oneIdentity') ? x[0] : [head(pattern), ...x]);
-						yield* listMatches(tail(pattern), tailGrouping, cond, replacements, captures);
+		} else if (pattern.length < tree.length && hasAttribute(pattern[0], 'flat')) {
+			if (hasAttribute(pattern[0], 'orderless')) {
+				if (!tail(pattern).some(isCapture)) {
+					let ms = tail(pattern).map(p => tail(tree).map((t,i)=>i).filter(i => hasMatch(p, tree[i], cond, replacements)));
+					for (let combination of combinations(ms)) {
+						if (combination.length === (new Set(combination)).size) {
+							let treeList = combination.map(i => tree[i]);
+							yield* listMatches(tail(pattern), treeList, cond, replacements, captures);
+						}
+					}
+				} else {
+					for (let perm of permutations(tail(tree))) {
+						for (let tailGrouping of nGroupings(perm, pattern.length - 1)) {
+							tailGrouping = tailGrouping.map(x => x.length == 1 && hasAttribute(pattern[0], 'oneIdentity') ? x[0] : [pattern[0], ...x]);
+							yield* listMatches(tail(pattern), tailGrouping, cond, replacements, captures);
+						}
 					}
 				}
 			} else {
 				for (let tailGrouping of nGroupings(tail(tree), pattern.length - 1)) {
-					tailGrouping = tailGrouping.map(x => x.length == 1 && hasAttribute(head(pattern), 'oneIdentity') ? x[0] : [head(pattern), ...x]);
+					tailGrouping = tailGrouping.map(x => x.length == 1 && hasAttribute(pattern[0], 'oneIdentity') ? x[0] : [pattern[0], ...x]);
 					yield* listMatches(tail(pattern), tailGrouping, cond, replacements, captures);
 				}
 			}
@@ -233,11 +265,11 @@ function flattenFlatOperators(tree) {
 	if (tree.length == 0) {
 		return tree;
 	}
-	if (hasAttribute(head(tree), 'flat')) {
-		var newTree = [head(tree)];
+	if (hasAttribute(tree[0], 'flat')) {
+		var newTree = [tree[0]];
 		for (var i = 1; i < tree.length; i++) {
 			var subtree = flattenFlatOperators(tree[i]);
-			if (Array.isArray(subtree) && head(tree) === head(subtree)) {
+			if (Array.isArray(subtree) && tree[0] === subtree[0]) {
 				newTree.push(...tail(subtree));
 			} else {
 				newTree.push(subtree);
@@ -252,7 +284,7 @@ function treeValue(tree) {
 	if (!Array.isArray(tree)) {
 		return String(tree);    // ??
 	} else {
-		if (['+', '*'].includes(head(tree))) {
+		if (['+', '*'].includes(tree[0])) {
 			for (let i = 1; i < tree.length; i++) {
 				let val = treeValue(tree[i]);
 				if (isNaN(val))
@@ -319,7 +351,7 @@ function evalConstants(tree) {
 		return tree;
 	}
 	var evaledTail = tail(tree).map(evalConstants);
-	switch (head(tree)) {
+	switch (tree[0]) {
 	case '+':
 		let sum = 0;
 		let remainingSum = [];
@@ -394,9 +426,9 @@ function evalConstants(tree) {
 			return !evaledTail[0];
 		break;
 	default:
-		return [head(tree), ...evaledTail];
+		return [tree[0], ...evaledTail];
 	}
-	return [head(tree), ...evaledTail];
+	return [tree[0], ...evaledTail];
 }
 
 function simplify(tree) {
@@ -412,11 +444,11 @@ function treeFree(tree, subtree) {
 }
 
 function isList(tree) {
-	return Array.isArray(tree) && head(tree) == 'list';
+	return Array.isArray(tree) && tree[0] == 'list';
 }
 
 function isIn(tree) {
-	return Array.isArray(tree) && head(tree) === 'in';
+	return Array.isArray(tree) && tree[0] === 'in';
 }
 
 function listCompReady(listComp) {
@@ -458,7 +490,7 @@ function evalFunctions(tree) {
 		return tree;
 	}
 	var evaledTail = tail(tree).map(evalFunctions);
-	switch (head(tree)) {
+	switch (tree[0]) {
 	case 'free':
 		return treeFree(evaledTail[0], evaledTail[1]);
 	case 'head':
@@ -471,7 +503,7 @@ function evalFunctions(tree) {
 		let evaled = ['listcomp', ...evaledTail];
 		return listCompReady(evaled) ? evalListComp(evaled) : evaled;
 	default:
-		return [head(tree), ...evaledTail];
+		return [tree[0], ...evaledTail];
 	}
 }
 
@@ -486,7 +518,7 @@ function treeEquals(a, b) {
 		if (a.length == 0 && b.length == 0) {
 			return true;
 		}
-		return treeEquals(head(a), head(b)) && treeEquals(tail(a), tail(b));
+		return treeEquals(a[0], b[0]) && treeEquals(tail(a), tail(b));
 	}
 	return false;
 }
@@ -513,7 +545,7 @@ function findFirstOptional(tree, indices = []) {
 	if (!Array.isArray(tree)) {
 		return null;
 	}
-	if (head(tree) === '?') {
+	if (tree[0] === '?') {
 		return indices;
 	}
 	for (let i = 1; i < tree.length; i++) {
@@ -543,7 +575,7 @@ function treeAt(tree, indices) {
 }
 
 function getDefault(tree, parentIndices, childIndex) {
-	let op = head(treeAt(tree, parentIndices));
+	let op = treeAt(tree, parentIndices)[0];
 	if (op === "*") {
 		return 1;
 	}
@@ -575,7 +607,7 @@ function expandOptionals(pattern, replacement, cond) {
 	if (isCapture(toReplace)) {
 		toReplace = toReplace[1];
 		if (Array.isArray(toReplace)) {
-			if (head(treeAt(defaultPattern, indices.slice(0, -1))) === head(toReplace)) {
+			if (treeAt(defaultPattern, indices.slice(0, -1))[0] === toReplace[0]) {
 				let captures = {};
 				for (let i = 1; i < toReplace.length; i++)
 					captures[toReplace[i]] = defaultVal;

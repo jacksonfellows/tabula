@@ -145,7 +145,7 @@ function expandCommand(command, arguments) {
 		return [literalToken(command)];
 	case '=': case 'ne': case '>': case 'ge': case '<': case 'le': case 'doteq':
 		return [operatorToken({'=': '=', 'ne': '!=', '>': '>', 'ge': '>=', '<': '<', 'le': '<=', 'doteq': 'same'}[command])];
-	case 'forall': case '?': case 'left{': case 'right}': case 'times': case 'in': case 'neg':
+	case 'forall': case '?': case 'left{': case 'right}': case 'times': case 'in': case 'neg': case 'dots':
 		return [operatorToken(command)];
 	default:
 		throw 'unsupported command: ' + command;
@@ -237,9 +237,20 @@ function operatorToken(op) {
 		return operatorPipeToken();
 	case 'neg':
 		return operatorNegToken();
+	case 'dots':
+		return operatorDotsToken();
 	default:
 		throw 'unsupported operator: ' + op;
 	}
+}
+
+function operatorDotsToken() {
+	return {
+		lbp: 7,
+		led: function(left) {
+			return ['range', left, expression(7)];
+		}
+	};
 }
 
 function operatorAddToken() {

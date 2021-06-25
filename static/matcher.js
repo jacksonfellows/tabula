@@ -350,7 +350,8 @@ function evalConstants(tree) {
 	if (tree.length == 0) {
 		return tree;
 	}
-	var evaledTail = tail(tree).map(evalConstants);
+	tree = tree.map(evalConstants);
+	let evaledTail = tail(tree);
 	switch (tree[0]) {
 	case '+':
 		let sum = 0;
@@ -425,6 +426,9 @@ function evalConstants(tree) {
 		if (typeof evaledTail[0] === 'boolean')
 			return !evaledTail[0];
 		break;
+	case 'range':
+		if (evaledTail.every(x => !isNaN(x)))
+			return evalRange(evaledTail);
 	default:
 		return [tree[0], ...evaledTail];
 	}
@@ -482,6 +486,13 @@ function evalListComp(listComp) {
 	return newList;
 }
 
+function evalRange(range) {
+	let list = ['list'];
+	for (let i = range[0]; i <= range[1]; i++)
+		list.push(i);
+	return list;
+}
+
 function evalFunctions(tree) {
 	if (!Array.isArray(tree)) {
 		return tree;
@@ -489,7 +500,8 @@ function evalFunctions(tree) {
 	if (tree.length == 0) {
 		return tree;
 	}
-	var evaledTail = tail(tree).map(evalFunctions);
+	tree = tree.map(evalFunctions);
+	let evaledTail = tail(tree);
 	switch (tree[0]) {
 	case 'free':
 		return treeFree(evaledTail[0], evaledTail[1]);
@@ -500,10 +512,9 @@ function evalFunctions(tree) {
 	case 'number':
 		return !isNaN(evaledTail[0]);
 	case 'listcomp':
-		let evaled = ['listcomp', ...evaledTail];
-		return listCompReady(evaled) ? evalListComp(evaled) : evaled;
+		return listCompReady(tree) ? evalListComp(tree) : tree;
 	default:
-		return [tree[0], ...evaledTail];
+		return tree;
 	}
 }
 

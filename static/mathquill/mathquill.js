@@ -3556,7 +3556,7 @@ LatexCmds.setminus = LatexCmds.smallsetminus =
 LatexCmds.not = //bind(Symbol,'\\not ','<span class="not">/</span>');
 LatexCmds['\u00ac'] = LatexCmds.neg = bind(VanillaSymbol,'\\neg ','&not;');
 
-LatexCmds['\u2026'] = LatexCmds.dots = LatexCmds.ellip = LatexCmds.hellip =
+LatexCmds['\u2026'] = LatexCmds.to = LatexCmds.dots = LatexCmds.ellip = LatexCmds.hellip =
 LatexCmds.ellipsis = LatexCmds.hellipsis =
   bind(VanillaSymbol,'\\dots ','&hellip;');
 
@@ -3572,7 +3572,7 @@ LatexCmds.diverges = LatexCmds.uarr = LatexCmds.uparrow =
 
 LatexCmds.uArr = LatexCmds.Uparrow = bind(VanillaSymbol,'\\Uparrow ','&uArr;');
 
-LatexCmds.to = bind(BinaryOperator,'\\to ','&rarr;');
+// LatexCmds.to = bind(BinaryOperator,'\\to ','&rarr;');
 
 LatexCmds.rarr = LatexCmds.rightarrow = bind(VanillaSymbol,'\\rightarrow ','&rarr;');
 

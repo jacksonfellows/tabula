@@ -87,6 +87,13 @@ function parseLatex(s) {
 				while (isDigit(inp.peek())) {
 					n = n * 10 + charToDigit(inp.consume());
 				}
+				if (inp.peek() === '.') {
+					inp.consume();
+					let i = 1;
+					while (isDigit(inp.peek())) {
+						n += (1/Math.pow(10, i++)) * charToDigit(inp.consume());
+					}
+				}
 				latex.push(literalToken(n));
 			} else if (isWhitespace(inp.peek())) {
 				// skip whitespace

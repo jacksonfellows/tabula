@@ -379,10 +379,14 @@ function evalConstants(tree) {
 		return remainingProduct.length == 0 ? product : (product == 1 ? (remainingProduct.length == 1 ? remainingProduct[0] : ['*', ...remainingProduct]) : ['*', product, ...remainingProduct]);
 	case '/':
 		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1])) {
-			let x = Math.abs(gcd(evaledTail[0], evaledTail[1]));
-			let n = evaledTail[0] / x;
-			let d = evaledTail[1] / x;
-			return d == 1 ? n : ['/', n, d];
+			if (Number.isInteger(evaledTail[0]) && Number.isInteger(evaledTail[1])) {
+				let x = Math.abs(gcd(evaledTail[0], evaledTail[1]));
+				let n = evaledTail[0] / x;
+				let d = evaledTail[1] / x;
+				return d == 1 ? n : ['/', n, d];
+			} else {
+				return evaledTail[0] / evaledTail[1];
+			}
 		}
 		if (evaledTail[1] === 1) {
 			return evaledTail[0];

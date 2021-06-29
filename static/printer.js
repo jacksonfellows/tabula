@@ -8,9 +8,11 @@ function isConstant(tree) {
 	return false;
 }
 
+const special = ['pi'];
+
 function printLatex(tree) {
 	if (!Array.isArray(tree)) {
-		return tree === true ? '\\text{true}' : (tree === false ? '\\text{false}' : String(tree));
+		return tree === true ? '\\text{true}' : (tree === false ? '\\text{false}' : (special.includes(tree) ? '\\' + tree : String(tree)));
 	}
 	var s, i;
 	switch (tree[0]) {

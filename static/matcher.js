@@ -433,6 +433,12 @@ function evalConstants(tree) {
 	case 'range':
 		if (evaledTail.every(x => !isNaN(x)))
 			return evalRange(evaledTail);
+	case 'sin':
+		if (!isNaN(evaledTail[0]))
+			return Math.sin(evaledTail[0]);
+	case 'cos':
+		if (!isNaN(evaledTail[0]))
+			return Math.cos(evaledTail[0]);
 	default:
 		return [tree[0], ...evaledTail];
 	}

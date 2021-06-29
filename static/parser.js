@@ -83,24 +83,26 @@ function parseLatex(s) {
 				inp = newInp;
 			} else if (isDigit(inp.peek())) {
 				// number
-				var n = 0;
+				var n = '';
 				while (isDigit(inp.peek())) {
-					n = n * 10 + charToDigit(inp.consume());
+					n += inp.consume();
 				}
 				if (inp.peek() === '.') {
-					inp.consume();
-					let i = 1;
+					n += inp.consume();
 					while (isDigit(inp.peek())) {
-						n += (1/Math.pow(10, i++)) * charToDigit(inp.consume());
+						n += inp.consume();
 					}
 				}
-				latex.push(literalToken(n));
+				latex.push(literalToken(Number(n)));
 			} else if (isWhitespace(inp.peek())) {
 				// skip whitespace
 				inp.consume();
 			} else if (isAlpha(inp.peek())) {
 				// variable
 				var v = inp.consume();
+				if (inp.peek() == '_') {
+					v += inp.consume() + inp.consume(); // TODO: only works for one letter subscripts
+				}
 				if (inp.peek() == '.') {
 					inp.consume();
 					if (inp.peek() == '.') {
@@ -148,7 +150,7 @@ function expandCommand(command, arguments) {
 		return [operatorToken(']')];
 	case 'equiv':
 		return [operatorToken('equiv')];
-	case 'ln': case 'log': case 'sin': case 'cos': case 'tan': case 'arcsin': case 'arccos': case 'arctan': case 'Sigma': case 'Pi':
+	case 'ln': case 'log': case 'sin': case 'cos': case 'tan': case 'arcsin': case 'arccos': case 'arctan': case 'Sigma': case 'Pi': case 'pi':
 		return [literalToken(command)];
 	case '=': case 'ne': case '>': case 'ge': case '<': case 'le': case 'doteq':
 		return [operatorToken({'=': '=', 'ne': '!=', '>': '>', 'ge': '>=', '<': '<', 'le': '<=', 'doteq': 'same'}[command])];

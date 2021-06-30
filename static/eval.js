@@ -19,37 +19,39 @@ function render(thing, key, oldElem) {
 	if (!thing) return $('<span></span>');
 	let elem;
 	switch (thing.type) {
-	case 'LatexInput':
-		elem = $('<span class="cancel wide mq">' + thing.latex + '</span>');
-		MQ.MathField(elem[0]);
-		return elem;
-	case 'LatexOutput':
-		elem = $('<span class="cancel mq">' + thing.latex + '</span>');
-		MQ.StaticMath(elem[0]);
-		return elem;
-	case 'TextInput':
-		return $('<input class="cancel" "type="text">').val(thing.text);
-	case 'DesmosGraph':
-		if (key in calculators) {
-			let calculator = calculators[key];
+		case 'LatexInput':
+			elem = $('<span class="cancel wide mq">' + thing.latex + '</span>');
+			MQ.MathField(elem[0]);
+			return elem;
+		case 'LatexOutput':
+			elem = $('<span class="cancel mq">' + thing.latex + '</span>');
+			MQ.StaticMath(elem[0]);
+			return elem;
+		case 'TextInput':
+			return $('<input class="cancel wide" type="text">').val(thing.text);
+		case 'TextOutput':
+			return $('<p>' + thing.text + '</p>');
+		case 'DesmosGraph':
+			if (key in calculators) {
+				let calculator = calculators[key];
+				calculator.setExpression({
+					id: key,
+					latex: thing.latex
+				});
+				return oldElem;
+			}
+			elem = $('<div class="cancel" style="width: 600px; height: 400px;"></div>');
+			let calculator = Desmos.GraphingCalculator(elem[0], {
+				expressions: false,
+			});
+			calculators[key] = calculator;
 			calculator.setExpression({
 				id: key,
-				latex: thing.latex
+				latex: thing.latex,
 			});
-			return oldElem;
-		}
-		elem = $('<div class="cancel" style="width: 600px; height: 400px;"></div>');
-		let calculator = Desmos.GraphingCalculator(elem[0], {
-			expressions: false,
-		});
-		calculators[key] = calculator;
-		calculator.setExpression({
-			id: key,
-			latex: thing.latex,
-		});
-		return elem;
-	default:
-		throw 'unsupported type of thing: ' + thing.type;
+			return elem;
+		default:
+			throw 'unsupported type of thing: ' + thing.type;
 	}
 }
 
@@ -72,60 +74,66 @@ function unrender(elem) {
 function runCell(key) {
 	console.log('running cell ' + key);
 	let cell = NOTEBOOK.cells[key];
-	cell.input = unrender($('#input'+key).children(0)); // maybe do this on change as well?
+	cell.input = unrender($('#input' + key).children(0)); // maybe do this on change as well?
 	switch (cell.type) {
-	case 'code':
-		if (cell.input.type !== 'LatexInput')
-			throw 'unsupported input type for code cells: ' + cell.input.type;
-		// remove old replacements
-		for (let key of cell.replacementKeys) {
-			delete NOTEBOOK.replacements[key];
-		}
-		let tree = parse(cell.input.latex);
-		if (tree[0] === 'define') {
-			cell.output = undefined; // ??
-			cell.replacementKeys = addDefine(tree, NOTEBOOK.replacements);
-		} else {
-			cell.output = {
-				type: 'LatexOutput',
-				latex: printLatex(evalReplacements(tree, NOTEBOOK.replacements))
-			};
-		}
-		break;
-	case 'graph':
-		if (cell.input.type !== 'LatexInput')
-			throw 'unsupported input type for graph cells: ' + cell.input.type;
-		let evaled = printDesmosLatex(evalReplacements(parse(cell.input.latex), NOTEBOOK.replacements));
-		console.log('rendering ' + evaled + ' in desmos');
-		cell.output = {
-			type: 'DesmosGraph',
-			latex: evaled,
-		};
-		break;
-	case 'import':
-		if (cell.input.type !== 'TextInput')
-			throw 'unsupported input type for import cells: ' + cell.input.type;
-		$.ajax({
-			url: '/replacements/' + cell.input.text,
-			dataType: 'json',
-			success: function(newReplacements) {
-				// remove old import
-				for (let key of cell.replacementKeys) {
-					delete NOTEBOOK.replacements[key];
-				}
-				for (let replacement of newReplacements) {
-					let key = newId();
-					NOTEBOOK.replacements[key] = replacement;
-					cell.replacementKeys.push(key);
-				}
-				console.log('imported ' + cell.input.text);
+		case 'code':
+			if (cell.input.type !== 'LatexInput')
+				throw 'unsupported input type for code cells: ' + cell.input.type;
+			// remove old replacements
+			for (let key of cell.replacementKeys) {
+				delete NOTEBOOK.replacements[key];
 			}
-		});
-		break;
-	default:
-		throw 'unsupported cell type ' + cell.type;
+			let tree = parse(cell.input.latex);
+			if (tree[0] === 'define') {
+				cell.output = undefined; // ??
+				cell.replacementKeys = addDefine(tree, NOTEBOOK.replacements);
+			} else {
+				cell.output = {
+					type: 'LatexOutput',
+					latex: printLatex(evalReplacements(tree, NOTEBOOK.replacements))
+				};
+			}
+			break;
+		case 'graph':
+			if (cell.input.type !== 'LatexInput')
+				throw 'unsupported input type for graph cells: ' + cell.input.type;
+			let evaled = printDesmosLatex(evalReplacements(parse(cell.input.latex), NOTEBOOK.replacements));
+			console.log('rendering ' + evaled + ' in desmos');
+			cell.output = {
+				type: 'DesmosGraph',
+				latex: evaled,
+			};
+			break;
+		case 'import':
+			if (cell.input.type !== 'TextInput')
+				throw 'unsupported input type for import cells: ' + cell.input.type;
+			$.ajax({
+				url: '/replacements/' + cell.input.text,
+				dataType: 'json',
+				success: function (newReplacements) {
+					// remove old import
+					for (let key of cell.replacementKeys) {
+						delete NOTEBOOK.replacements[key];
+					}
+					for (let replacement of newReplacements) {
+						let key = newId();
+						NOTEBOOK.replacements[key] = replacement;
+						cell.replacementKeys.push(key);
+					}
+					console.log('imported ' + cell.input.text);
+				}
+			});
+			break;
+		case 'note':
+			cell.output = {
+				type: 'TextOutput',
+				text: cell.input.text
+			};
+			break;
+		default:
+			throw 'unsupported cell type ' + cell.type;
 	}
-	$('#output'+key).children(0).replaceWith(render(cell.output, key, $('#output'+key).children(0)));
+	$('#output' + key).children(0).replaceWith(render(cell.output, key, $('#output' + key).children(0)));
 }
 
 function deleteCell(key) {
@@ -154,6 +162,18 @@ function appendCell(key) {
 	$('#cells').append(renderCell(key));
 	if (!NOTEBOOK.cellOrder.includes(key))
 		NOTEBOOK.cellOrder.push(key);
+}
+
+function addNoteCell() {
+	let key = newId();
+	NOTEBOOK.cells[key] = {
+		type: 'note',
+		input: {
+			type: 'TextInput',
+			text: ''
+		}
+	}
+	appendCell(key);
 }
 
 function addCodeCell() {
@@ -201,7 +221,7 @@ function updateCellOrder() {
 // display NOTEBOOK
 $('#cells').sortable({
 	axis: 'y',
-	update: function(event, ui) {
+	update: function (event, ui) {
 		updateCellOrder();
 	},
 	cancel: '.cancel',
@@ -232,7 +252,7 @@ $("#title").on("focusin", function () {
 });
 
 // update NOTEBOOK.title
-$('#title').on('change', function() {
+$('#title').on('change', function () {
 	NOTEBOOK.title = $('#title').val();
 });
 
@@ -242,7 +262,7 @@ function saveNotebook() {
 		contentType: 'application/json; charset=utf-8',
 		url: '/save',
 		data: JSON.stringify(NOTEBOOK),
-		success: function(status) {
+		success: function (status) {
 			console.log(status);
 			let newPathname = '/notebooks/' + NOTEBOOK.title;
 			if (window.location.pathname !== newPathname) {

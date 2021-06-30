@@ -1,7 +1,8 @@
 <html>
-  <head>
-    <title>Tabula</title>
-    <link rel="stylesheet" href="/mathquill/mathquill.css">
+
+<head>
+  <title>Tabula</title>
+  <link rel="stylesheet" href="/mathquill/mathquill.css">
   </link>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
@@ -11,43 +12,52 @@
   <script src="/matcher.js"></script>
   <script src="/printer.js"></script>
   <style>
-    #cells > *:not(:last-child) {
-        display: block;
-        margin-bottom: 20px;
+    #cells>*:not(:last-child) {
+      display: block;
+      margin-bottom: 20px;
     }
+
     .cancel {}
+
     .wide {
-        width: 100%;
+      width: 100%;
     }
+
     .mq {
-        background-color: white;
+      background-color: white;
     }
-    p { /* bad idea? */
-        margin: 5px;
+
+    p {
+      /* bad idea? */
+      margin: 5px;
     }
+
     .cell {
-        background-color: whitesmoke;
-        padding-top: 2px;
-        padding-bottom: 2px;
+      background-color: whitesmoke;
+      padding-top: 2px;
+      padding-bottom: 2px;
     }
   </style>
-  </head>
+</head>
 
-  <body>
-    <h2>
-      <input type="text" style=" font-size: inherit; outline: none; border-color: transparent;" id="title" class="mq-editable-field">
-      <br>
-    </h2>
-    <hr>
-    <div id="cells"></div>
-    <hr>
-    <button onclick="addCodeCell()">add code cell</button>
-    <button onclick="addGraphCell()">add graph cell</button>
-    <button onclick="addImportCell()">add import cell</button>
-    <button onclick="saveNotebook()">save notebook</button>
-  </body>
-  <script>
-    let NOTEBOOK = {{ notebook_state | safe }};
-  </script>
-  <script src="/eval.js"></script>
+<body>
+  <h2>
+    <input type="text" style=" font-size: inherit; outline: none; border-color: transparent;" id="title"
+      class="mq-editable-field">
+    <br>
+  </h2>
+  <hr>
+  <div id="cells"></div>
+  <hr>
+  <button onclick="addCodeCell()">add code cell</button>
+  <button onclick="addGraphCell()">add graph cell</button>
+  <button onclick="addImportCell()">add import cell</button>
+  <button onclick="addNoteCell()">add note cell</button>
+  <button onclick="saveNotebook()">save notebook</button>
+</body>
+<script>
+  let NOTEBOOK = {{ notebook_state | safe }};
+</script>
+<script src="/eval.js"></script>
+
 </html>

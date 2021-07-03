@@ -13,7 +13,7 @@
   <style>
     #cells > *:not(:last-child) {
         display: block;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
     }
     .cancel {}
     .wide {
@@ -27,8 +27,25 @@
     }
     .cell {
         background-color: whitesmoke;
-        padding-top: 2px;
-        padding-bottom: 2px;
+        border: solid white 1px;
+        border-left: solid white 5px;
+        padding: 2px;
+    }
+    .cell > *:not(:last-child) {
+        display: block;
+        margin-bottom: 2px;
+    }
+    .selected-cell {
+        border-color: blue;
+    }
+    .input-selected-cell {
+        border-color: green;
+    }
+    input:focus {
+        outline: none;
+    }
+    .mq-editable-field.mq-focused {
+        box-shadow: none;
     }
   </style>
   </head>

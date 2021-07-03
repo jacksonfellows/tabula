@@ -141,19 +141,45 @@ function deleteCell(key) {
 	NOTEBOOK.cellOrder.splice(NOTEBOOK.cellOrder.indexOf(key), 1);
 }
 
+function select(cell) {
+	$('#cells').children().removeClass('selected-cell');
+	cell.removeClass('input-selected-cell').addClass('selected-cell');
+	$(document.activeElement).blur();
+	return cell;
+}
+
 function renderCell(key) {
 	let cell = NOTEBOOK.cells[key];
+	let input = render(cell.input, key);
+	input.keydown(e => {
+		if (e.which === 13) {
+			runCell(key);
+		}
+	});
+	input.click((e) => e.stopPropagation());
+	input.focusin((e) => {
+		$('#cells').children().removeClass('selected-cell');
+		$('#cell' + key).addClass('input-selected-cell');
+	});
+	input.focusout((e) => $('#cell' + key).removeClass('input-selected-cell'));
 	return $('<div id="cell' + key + '" class="cell"></div>').append(
-		$('<p id="input' + key + '"></p>').append(render(cell.input, key)),
-		$('<p id="output' + key + '"></p>').append(render(cell.output, key)),
-		$('<p><button onclick=runCell("' + key + '")>evaluate cell</button><button onclick=deleteCell("' + key + '")>delete cell</button><span style="float: right;">' + cell.type + '</span></p>'),
-	);
+		$('<div style="display: flex;"></div>').append(
+			$('<div style="flex-grow: 1;" id="input' + key + '"></div>').append(input),
+			$('<div style="width: 60px;"><span style="float: right;">' + cell.type + '</span></div>'),
+		),
+		$('<div id="output' + key + '"></div>').append(render(cell.output, key)),
+	).click((e) => select($(e.currentTarget)));
 }
 
 function appendCell(key) {
-	$('#cells').append(renderCell(key));
-	if (!NOTEBOOK.cellOrder.includes(key))
+	$('#cells').append(select(renderCell(key)));
+	if (!NOTEBOOK.cellOrder.includes(key)) {
 		NOTEBOOK.cellOrder.push(key);
+		if (NOTEBOOK.cells[key].input.type === 'LatexInput')
+			$('#input' + key).children(0).mousedown().mouseup();
+		else
+			$('#input' + key).children(0).focus();
+	}
 }
 
 function addCodeCell() {
@@ -251,3 +277,9 @@ function saveNotebook() {
 		},
 	});
 }
+
+$(document).keydown(e => {
+	if (e.which === 8) {
+		$('.selected-cell').each((i, cell) => deleteCell(cell.id.substring(4)));
+	}
+});

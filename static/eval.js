@@ -151,11 +151,6 @@ function select(cell) {
 function renderCell(key) {
 	let cell = NOTEBOOK.cells[key];
 	let input = render(cell.input, key);
-	input.keydown(e => {
-		if (e.which === 13) {
-			runCell(key);
-		}
-	});
 	input.click((e) => e.stopPropagation());
 	input.focusin((e) => {
 		$('#cells').children().removeClass('selected-cell');
@@ -278,8 +273,14 @@ function saveNotebook() {
 	});
 }
 
-$(document).keydown(e => {
-	if (e.which === 8) {
+let keys = {};
+
+document.onkeydown = document.onkeyup = e => {
+	keys[e.key] = e.type === 'keydown';
+	if (keys['Shift'] && keys['Enter']) {
+		$('.selected-cell, .input-selected-cell').each((i, cell) => runCell(cell.id.substring(4)));
+	}
+	if (keys['Backspace']) {
 		$('.selected-cell').each((i, cell) => deleteCell(cell.id.substring(4)));
 	}
-});
+};

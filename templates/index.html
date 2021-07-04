@@ -6,6 +6,7 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
   <script src="https://www.desmos.com/api/v1.6/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="/mathquill/mathquill.js"></script>
   <script src="/parser.js"></script>
   <script src="/matcher.js"></script>
@@ -41,11 +42,45 @@
     .input-selected-cell {
         border-color: green;
     }
-    input:focus {
+    input:focus, textarea:focus {
         outline: none;
     }
     .mq-editable-field.mq-focused {
         box-shadow: none;
+    }
+    textarea {
+        resize: vertical;
+    }
+    .grow-wrap {
+        /* easy way to plop the elements on top of each other and have them both sized based on the tallest one's height */
+        display: grid;
+    }
+    .grow-wrap::after {
+        /* Note the weird space! Needed to preventy jumpy behavior */
+        content: attr(data-replicated-value) " ";
+
+        /* This is how textarea text behaves */
+        white-space: pre-wrap;
+
+        /* Hidden from view, clicks, and screen readers */
+        visibility: hidden;
+    }
+    .grow-wrap > textarea {
+        /* You could leave this, but after a user resizes, then it ruins the auto sizing */
+        resize: none;
+
+        /* Firefox shows scrollbar on growth, you can hide like this. */
+        overflow: hidden;
+    }
+    .grow-wrap > textarea,
+    .grow-wrap::after {
+        /* Identical styling required!! */
+        border: 1px solid grey;
+        padding: 0.5rem;
+        font: inherit;
+
+        /* Place on top of each other */
+        grid-area: 1 / 1 / 2 / 2;
     }
   </style>
   </head>
@@ -60,7 +95,9 @@
     <hr>
     <button onclick="addCodeCell()">add code cell</button>
     <button onclick="addGraphCell()">add graph cell</button>
+    <button onclick="addNoteCell()">add note cell</button>
     <button onclick="addImportCell()">add import cell</button>
+    <br><br>
     <button onclick="saveNotebook()">save notebook</button>
   </body>
   <script>

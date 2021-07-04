@@ -48,6 +48,12 @@ function render(thing, key, oldElem) {
 			latex: thing.latex,
 		});
 		return elem;
+	case 'TextArea':
+		return $('<div class="grow-wrap"></div>').append(
+			$('<textarea class="cancel wide" onInput="this.parentNode.dataset.replicatedValue = this.value"></textarea>').val(thing.text).attr('rows', (thing.text.match(/\n/g) || []).length + 1)
+		);
+	case 'RawHTML':
+		return $('<div class="cancel"></div>').html(thing.html);
 	default:
 		throw 'unsupported type of thing: ' + thing.type;
 	}
@@ -64,6 +70,12 @@ function unrender(elem) {
 		return {
 			type: 'TextInput',
 			text: elem.val(),
+		};
+	}
+	if (elem.children(0).is('textarea')) {
+		return {
+			type: 'TextArea',
+			text: elem.children(0).val(),
 		};
 	}
 	throw 'cannot unrender ' + elem;
@@ -122,6 +134,14 @@ function runCell(key) {
 			}
 		});
 		break;
+	case 'note':
+		if (cell.input.type !== 'TextArea')
+			throw 'unsupported input type for note cells: ' + cell.input.type;
+		cell.output = {
+			type: 'RawHTML',
+			html: marked(cell.input.text),
+		};
+		break;
 	default:
 		throw 'unsupported cell type ' + cell.type;
 	}
@@ -172,6 +192,8 @@ function appendCell(key) {
 		NOTEBOOK.cellOrder.push(key);
 		if (NOTEBOOK.cells[key].input.type === 'LatexInput')
 			$('#input' + key).children(0).mousedown().mouseup();
+		else if (NOTEBOOK.cells[key].input.type === 'TextArea')
+			$('#input' + key).children(0).children(0).focus();
 		else
 			$('#input' + key).children(0).focus();
 	}
@@ -211,6 +233,18 @@ function addImportCell() {
 			text: ''
 		},
 		replacementKeys: [],
+	};
+	appendCell(key);
+}
+
+function addNoteCell() {
+	let key = newId();
+	NOTEBOOK.cells[key] = {
+		type: 'note',
+		input: {
+			type: 'TextArea',
+			text: '',
+		},
 	};
 	appendCell(key);
 }
@@ -278,6 +312,7 @@ let keys = {};
 document.onkeydown = document.onkeyup = e => {
 	keys[e.key] = e.type === 'keydown';
 	if (keys['Shift'] && keys['Enter']) {
+		e.preventDefault();
 		$('.selected-cell, .input-selected-cell').each((i, cell) => runCell(cell.id.substring(4)));
 	}
 	if (keys['Backspace']) {

@@ -15,18 +15,23 @@ let newId = _ => Math.random().toString(36).substring(2);
 
 let calculators = {};
 
+let callbacks = [];
+
+function runCallbacks() {
+	while (callbacks.length > 0)
+		callbacks.pop()();
+}
+
 function render(thing, key, oldElem) {
 	if (!thing || thing.invisible) return $('<span></span>');
 	let elem;
 	switch (thing.type) {
 	case 'LatexInput':
-		elem = $('<span class="cancel wide mq">' + thing.latex + '</span>');
-		MQ.MathField(elem[0]);
-		return elem;
+		callbacks.push(() => MQ.MathField($('#input'+key).children(0)[0]));
+		return $('<span class="cancel wide mq">' + thing.latex + '</span>');
 	case 'LatexOutput':
-		elem = $('<span class="cancel mq">' + thing.latex + '</span>');
-		MQ.StaticMath(elem[0]);
-		return elem;
+		callbacks.push(() => MQ.StaticMath($('#output'+key).children(0)[0]));
+		return $('<span class="cancel mq">' + thing.latex + '</span>');
 	case 'TextInput':
 		return $('<input class="cancel" "type="text">').val(thing.text);
 	case 'DesmosGraph':
@@ -157,6 +162,7 @@ function runCell(key) {
 	}
 	$('#output'+key).empty();
 	$('#output'+key).append(render(cell.output, key, $('#output'+key).children(0)));
+	runCallbacks();
 }
 
 function deleteCell(key) {
@@ -205,6 +211,7 @@ function renderCell(key) {
 
 function appendCell(key) {
 	$('#cells').append(select(renderCell(key)));
+	runCallbacks();
 	if (!NOTEBOOK.cellOrder.includes(key)) {
 		NOTEBOOK.cellOrder.push(key);
 		if (NOTEBOOK.cells[key].input.type === 'LatexInput')

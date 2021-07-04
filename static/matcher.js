@@ -340,7 +340,7 @@ function constantMul(a, b) {
 		return ['/', a * b[1], b[2]];
 	if (isConstantFrac(a) && !isNaN(b))
 		return ['/', a[1] * b, a[2]];
-	throw 'invalid terms for constant multiplication: ' + JSON.stringify(a) + ' * ' + JSON.stringify(b);	
+	throw 'invalid terms for constant multiplication: ' + JSON.stringify(a) + ' * ' + JSON.stringify(b);
 }
 
 function evalConstants(tree) {

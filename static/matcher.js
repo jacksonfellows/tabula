@@ -31,6 +31,8 @@ function* combinations(arrs, offset = 0) {
 	}
 }
 
+const p = x => console.log(JSON.stringify(x));
+
 function findMatchAndReplace(pattern, tree, replacement, cond, replacements) {
 	function findMatchAndReplaceRec(pattern, tree, replacement, cond) {
 		// match on same level
@@ -41,7 +43,7 @@ function findMatchAndReplace(pattern, tree, replacement, cond, replacements) {
 		if (Array.isArray(pattern) && Array.isArray(tree) && pattern[0] === tree[0] && hasAttribute(pattern[0], 'flat') && pattern.length < tree.length) {
 			if (hasAttribute(pattern[0], 'orderless')) {
 				if (!tail(pattern).some(isCapture)) {
-					let ms = tail(pattern).map(p => tail(tree).map((t,i)=>i).filter(i => hasMatch(p, tree[i], cond, replacements)));
+					let ms = tail(pattern).map(p => tree.map((t,i)=>i).filter(i => hasMatch(p, tree[i], cond, replacements)));
 					for (let combination of combinations(ms)) {
 						if (combination.length === (new Set(combination)).size) {
 							let treeList = combination.map(i => tree[i]);
@@ -233,13 +235,7 @@ function* matches(pattern, tree, cond, replacements, captures = {}) {
 		} else if (pattern.length < tree.length && hasAttribute(pattern[0], 'flat')) {
 			if (hasAttribute(pattern[0], 'orderless')) {
 				if (!tail(pattern).some(isCapture)) {
-					let ms = tail(pattern).map(p => tail(tree).map((t,i)=>i).filter(i => hasMatch(p, tree[i], cond, replacements)));
-					for (let combination of combinations(ms)) {
-						if (combination.length === (new Set(combination)).size) {
-							let treeList = combination.map(i => tree[i]);
-							yield* listMatches(tail(pattern), treeList, cond, replacements, captures);
-						}
-					}
+
 				} else {
 					for (let perm of permutations(tail(tree))) {
 						for (let tailGrouping of nGroupings(perm, pattern.length - 1)) {

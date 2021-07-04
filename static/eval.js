@@ -16,7 +16,7 @@ let newId = _ => Math.random().toString(36).substring(2);
 let calculators = {};
 
 function render(thing, key, oldElem) {
-	if (!thing) return $('<span></span>');
+	if (!thing || thing.invisible) return $('<span></span>');
 	let elem;
 	switch (thing.type) {
 	case 'LatexInput':
@@ -52,8 +52,14 @@ function render(thing, key, oldElem) {
 		return $('<div class="grow-wrap"></div>').append(
 			$('<textarea class="cancel wide" onInput="this.parentNode.dataset.replicatedValue = this.value"></textarea>').val(thing.text).attr('rows', (thing.text.match(/\n/g) || []).length + 1)
 		);
-	case 'RawHTML':
-		return $('<div class="cancel"></div>').html(thing.html);
+	case 'MarkdownOutput':
+		return $('<div class="cancel" style="background-color: white;"></div>').html(thing.html).dblclick(e => {
+			NOTEBOOK.cells[key].input.invisible = false;
+			$('#input'+key).append(renderInput(NOTEBOOK.cells[key], key));
+			$('#input'+key).children(0).children(0).focus();
+			NOTEBOOK.cells[key].output.invisible = true;
+			$('#output'+key).empty();
+		});
 	default:
 		throw 'unsupported type of thing: ' + thing.type;
 	}
@@ -138,14 +144,19 @@ function runCell(key) {
 		if (cell.input.type !== 'TextArea')
 			throw 'unsupported input type for note cells: ' + cell.input.type;
 		cell.output = {
-			type: 'RawHTML',
+			type: 'MarkdownOutput',
 			html: marked(cell.input.text),
 		};
+		cell.output.invisible = false;
+		cell.input.invisible = true;
+		$('#input'+key).empty();
+		select($('#cell'+key));
 		break;
 	default:
 		throw 'unsupported cell type ' + cell.type;
 	}
-	$('#output'+key).children(0).replaceWith(render(cell.output, key, $('#output'+key).children(0)));
+	$('#output'+key).empty();
+	$('#output'+key).append(render(cell.output, key, $('#output'+key).children(0)));
 }
 
 function deleteCell(key) {
@@ -168,8 +179,7 @@ function select(cell) {
 	return cell;
 }
 
-function renderCell(key) {
-	let cell = NOTEBOOK.cells[key];
+function renderInput(cell, key) {
 	let input = render(cell.input, key);
 	input.click((e) => e.stopPropagation());
 	input.focusin((e) => {
@@ -177,12 +187,19 @@ function renderCell(key) {
 		$('#cell' + key).addClass('input-selected-cell');
 	});
 	input.focusout((e) => $('#cell' + key).removeClass('input-selected-cell'));
+	return input;
+}
+
+function renderCell(key) {
+	let cell = NOTEBOOK.cells[key];
 	return $('<div id="cell' + key + '" class="cell"></div>').append(
 		$('<div style="display: flex;"></div>').append(
-			$('<div style="flex-grow: 1;" id="input' + key + '"></div>').append(input),
+			$('<div style="flex-grow: 1;"></div>').append(
+				$('<div id="input' + key + '"></div>').append(renderInput(cell, key)),
+				$('<div id="output' + key + '"></div>').append(render(cell.output, key)),
+			),
 			$('<div style="width: 60px;"><span style="float: right;">' + cell.type + '</span></div>'),
 		),
-		$('<div id="output' + key + '"></div>').append(render(cell.output, key)),
 	).click((e) => select($(e.currentTarget)));
 }
 

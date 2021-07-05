@@ -58,7 +58,7 @@ function render(thing, key, oldElem) {
 			$('<textarea class="cancel wide" onInput="this.parentNode.dataset.replicatedValue = this.value"></textarea>').val(thing.text).attr('rows', (thing.text.match(/\n/g) || []).length + 1)
 		);
 	case 'MarkdownOutput':
-		return $('<div class="cancel" style="background-color: white;"></div>').html(thing.html).dblclick(e => {
+		return $('<div class="cancel markdown" style="background-color: white;"></div>').html(thing.html).dblclick(e => {
 			NOTEBOOK.cells[key].input.invisible = false;
 			$('#input'+key).append(renderInput(NOTEBOOK.cells[key], key));
 			$('#input'+key).children(0).children(0).focus();

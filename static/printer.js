@@ -51,6 +51,8 @@ function printLatex(tree) {
 			return '\\sqrt{' + printLatex(tree[1]) + '}';
 		}
 		return (Array.isArray(tree[1]) ? '\\left(' + printLatex(tree[1]) + '\\right)' : printLatex(tree[1])) + '^' + '{' + printLatex(tree[2]) + '}';
+	case 'binom':
+		return '\\binom{' + printLatex(tree[1]) + '}{' + printLatex(tree[2]) + '}';
 	case '=': case '!=': case '>': case '>=': case '<': case '<=':
 		return printLatex(tree[1]) + ' ' + {'=': '=', '!=': '\\ne ', '>': '> ', '>=': '\\ge', '<': '<', '<=': '\\le'}[tree[0]] + ' ' + printLatex(tree[2]);
 	case 'list':

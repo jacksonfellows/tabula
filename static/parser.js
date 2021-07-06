@@ -138,6 +138,11 @@ function expandCommand(command, arguments) {
 			throw 'improper \\sqrt usage';
 		}
 		return [operatorToken('('), ...arguments[0], operatorToken(')'), operatorToken('^'), operatorToken('('), literalToken(1), operatorToken('/'), literalToken(2), operatorToken(')')];
+	case 'binom':
+		if (arguments.length != 2) {
+			throw 'improper \\binom usage';
+		}
+		return [literalToken('binom'), operatorToken('['), ...arguments[0], operatorToken(','), ...arguments[1], operatorToken(']')];
 	case 'cdot':
 		return [operatorToken('*')];
 	case 'left(':

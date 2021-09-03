@@ -35,6 +35,10 @@ const p = x => console.log(JSON.stringify(x));
 
 function findMatchAndReplace(pattern, tree, replacement, cond, replacements) {
 	function findMatchAndReplaceRec(pattern, tree, replacement, cond) {
+		// stupid?
+		if (tree[0] === 'listcomp')
+			return tree;
+
 		// match on same level
 		for (let captures of matches(pattern, tree, cond, replacements)) { // max 1 iteration
 			return replaceCaptures(replacement, captures);

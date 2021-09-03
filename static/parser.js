@@ -158,7 +158,7 @@ function expandCommand(command, arguments) {
 		return [literalToken(command)];
 	case '=': case 'ne': case '>': case 'ge': case '<': case 'le': case 'doteq':
 		return [operatorToken({'=': '=', 'ne': '!=', '>': '>', 'ge': '>=', '<': '<', 'le': '<=', 'doteq': 'same'}[command])];
-	case 'forall': case '?': case 'left{': case 'right}': case 'times': case 'in': case 'neg': case 'dots':
+	case 'forall': case '?': case 'left{': case 'right}': case 'times': case 'in': case 'neg': case 'dots': case 'left|': case 'right|':
 		return [operatorToken(command)];
 	default:
 		throw 'unsupported command: ' + command;
@@ -252,6 +252,10 @@ function operatorToken(op) {
 		return operatorNegToken();
 	case 'dots':
 		return operatorDotsToken();
+	case 'left|':
+		return operatorLpipeToken();
+	case 'right|':
+		return operatorRpipeToken();
 	default:
 		throw 'unsupported operator: ' + op;
 	}
@@ -356,6 +360,28 @@ function operatorLparenToken() {
 function operatorRparenToken() {
 	return {
 		type: 'rparen',
+		lbp: 0
+	};
+}
+
+function operatorLpipeToken() {
+	return {
+		type: 'lpipe',
+		lbp: 0,
+		nud: function() {
+			var expr = expression();
+			if (token.type !== 'rpipe') {
+				throw 'expecting closing |';
+			}
+			token = next();
+			return ['magnitude', expr];
+		}
+	};
+}
+
+function operatorRpipeToken() {
+	return {
+		type: 'rpipe',
 		lbp: 0
 	};
 }

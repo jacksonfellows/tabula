@@ -343,6 +343,21 @@ function constantMul(a, b) {
 	throw 'invalid terms for constant multiplication: ' + JSON.stringify(a) + ' * ' + JSON.stringify(b);
 }
 
+function groupedFactors(n) {
+	for (let i = 2; i <= Math.sqrt(n); i++) {
+		if (n % i === 0) {
+			let rest = groupedFactors(n / i);
+			if (rest[0][1] === i) {
+				rest[0][0]++;
+			} else {
+				rest = [[1,i]].concat(rest);
+			}
+			return rest;
+		}
+	}
+	return [[1,n]];
+}
+
 function evalConstants(tree) {
 	if (!Array.isArray(tree)) {
 		return tree;
@@ -397,6 +412,28 @@ function evalConstants(tree) {
 			return evaledTail[0] ** evaledTail[1];
 		if (evaledTail[1] === 1)
 			return evaledTail[0];
+		if (!isNaN(evaledTail[0]) && isConstantFrac(evaledTail[1])) {
+			let ans = evaledTail[0] ** (evaledTail[1][1] / evaledTail[1][2]);
+			if (Number.isInteger(ans))
+				return ans;
+			if (evaledTail[1][1] === 1) {
+				let newExpr = ['*'];
+				let newRoot = 1;
+				let factors = groupedFactors(evaledTail[0]);
+				for (let [n,factor] of factors) {
+					if (n >= evaledTail[1][2]) {
+						newExpr.push(factor*Math.floor(n/evaledTail[1][2]));
+						newRoot *= factor ** (n % evaledTail[1][2]);
+					} else {
+						newRoot *= factor ** n;
+					}
+				}
+				if (newExpr.length > 1) {
+					newExpr.push(['^', newRoot, evaledTail[1]]);
+					return newExpr;
+				}
+			}
+		}
 		break;
 	case '=':
 		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))

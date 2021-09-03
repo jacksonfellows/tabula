@@ -44,7 +44,7 @@ function parseLatex(s) {
 				// command
 				inp.consume();
 				var command = '';
-				while (inp.peek() && inp.peek() !== '{' && inp.peek() !== '\\' && !isWhitespace(inp.peek()) && !isDigit(inp.peek()) && inp.peek() !== "-" && inp.peek() !== '+') {
+				while (inp.peek() && inp.peek() !== '{' && inp.peek() !== '\\' && !isWhitespace(inp.peek()) && !isDigit(inp.peek()) && inp.peek() !== "-" && inp.peek() !== '+' && inp.peek() !== ',' && inp.peek() !== '.') {
 					var c = inp.consume();
 					command += c;
 					if (!isAlpha(c)) {
@@ -103,15 +103,14 @@ function parseLatex(s) {
 				if (inp.peek() == '_') {
 					v += inp.consume() + inp.consume(); // TODO: only works for one letter subscripts
 				}
-				if (inp.peek() == '.') {
+				latex.push(literalToken(v));
+			} else if (inp.peek() === '.') {
+				inp.consume();
+				if (inp.peek() === '.') {
 					inp.consume();
-					if (inp.peek() == '.') {
-						inp.consume();
-						latex.push(literalToken(['..', v]));
-					} else
-						latex.push(literalToken(['.', v]));
+					latex.push(literalToken(['..', latex.pop().nud()]));
 				} else {
-					latex.push(literalToken(v));
+					latex.push(literalToken(['.', latex.pop().nud()]));
 				}
 			} else {
 				// operator

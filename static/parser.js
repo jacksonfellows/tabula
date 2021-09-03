@@ -246,8 +246,8 @@ function operatorToken(op) {
 		return operatorColonToken();
 	case 'in':
 		return operatorInToken();
-	case '|':
-		return operatorPipeToken();
+	case ';':
+		return operatorSemicolonToken();
 	case 'neg':
 		return operatorNegToken();
 	case 'dots':
@@ -408,13 +408,13 @@ function operatorInToken() {
 	};
 }
 
-function operatorPipeToken() {
+function operatorSemicolonToken() {
 	return {
-		type: 'pipe',
+		type: 'semicolon',
 		lbp: 5,
 		led: function(left) {
 			if (left[0] !== 'in')
-				throw '(currently) invalid use of |';
+				throw '(currently) invalid use of ;';
 			let right = expression(5);
 			return ['in', left[1].concat(right[1]), left[2].concat(right[2])];
 		}

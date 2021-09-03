@@ -312,9 +312,9 @@ function operatorMulToken() {
 
 function operatorCrossToken() {
 	return {
-		lbp: 21,
+		lbp: 19,
 		led: function(left) {
-			return ['cross', left, expression(20)];
+			return ['cross', left, expression(19)];
 		}
 	};
 }

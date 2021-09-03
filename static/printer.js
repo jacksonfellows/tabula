@@ -8,7 +8,7 @@ function isPrinterConstant(tree) {
 	return false;
 }
 
-const special = ['pi'];
+const special = ['pi', 'rho', 'theta'];
 
 function printLatex(tree) {
 	if (!Array.isArray(tree)) {

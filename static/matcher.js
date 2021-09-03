@@ -412,6 +412,8 @@ function evalConstants(tree) {
 			return evaledTail[0] ** evaledTail[1];
 		if (evaledTail[1] === 1)
 			return evaledTail[0];
+		if (!isNaN(evaledTail[0]) && !Number.isInteger(evaledTail[0]) && isConstantFrac(evaledTail[1]))
+			return evaledTail[0] ** (evaledTail[1][1] / evaledTail[1][2]);
 		if (!isNaN(evaledTail[0]) && isConstantFrac(evaledTail[1])) {
 			let ans = evaledTail[0] ** (evaledTail[1][1] / evaledTail[1][2]);
 			if (Number.isInteger(ans))

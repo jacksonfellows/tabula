@@ -39,19 +39,24 @@ function render(thing, key, oldElem) {
 			let calculator = calculators[key];
 			calculator.setExpression({
 				id: key,
-				latex: thing.latex
+				latex: thing.latex,
 			});
+			calculator.setMathBounds(thing.bounds);
 			return oldElem;
 		}
 		elem = $('<div class="cancel" style="width: 600px; height: 400px;"></div>');
 		let calculator = Desmos.GraphingCalculator(elem[0], {
 			expressions: false,
 		});
+		calculator.observe('graphpaperBounds', () => {
+			NOTEBOOK.cells[key].output.bounds = calculator.graphpaperBounds.mathCoordinates;
+		});
 		calculators[key] = calculator;
 		calculator.setExpression({
 			id: key,
 			latex: thing.latex,
 		});
+		calculator.setMathBounds(thing.bounds);
 		return elem;
 	case 'TextArea':
 		return $('<div class="grow-wrap"></div>').append(
@@ -123,6 +128,12 @@ function runCell(key) {
 		cell.output = {
 			type: 'DesmosGraph',
 			latex: evaled,
+			bounds: {
+				top: 10,
+				bottom: -10,
+				left: -10,
+				right: 10,
+			}
 		};
 		break;
 	case 'import':

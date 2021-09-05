@@ -47,6 +47,9 @@ function parseLatex(s) {
 				while (inp.peek() && inp.peek() !== '{' && inp.peek() !== '\\' && !isWhitespace(inp.peek()) && !isDigit(inp.peek()) && inp.peek() !== "-" && inp.peek() !== '+' && inp.peek() !== ',' && inp.peek() !== '.') {
 					var c = inp.consume();
 					command += c;
+					if (c === '_') {
+						command += inp.consume(); // only 1-letter subscripts
+					}
 					if (!isAlpha(c)) {
 						break;
 					}

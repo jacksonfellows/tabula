@@ -160,7 +160,8 @@ function runCell(key) {
 	default:
 		throw 'unsupported cell type ' + cell.type;
 	}
-	$('#output'+key).empty();
+	if (cell.type !== 'graph')
+		$('#output'+key).empty();
 	$('#output'+key).append(render(cell.output, key, $('#output'+key).children(0)));
 	runCallbacks();
 }

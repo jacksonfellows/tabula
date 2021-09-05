@@ -157,14 +157,12 @@ function expandCommand(command, arguments) {
 		return [operatorToken(']')];
 	case 'equiv':
 		return [operatorToken('equiv')];
-	case 'ln': case 'log': case 'sin': case 'cos': case 'tan': case 'arcsin': case 'arccos': case 'arctan': case 'Sigma': case 'Pi': case 'pi': case 'theta': case 'rho':
-		return [literalToken(command)];
 	case '=': case 'ne': case '>': case 'ge': case '<': case 'le': case 'doteq':
 		return [operatorToken({'=': '=', 'ne': '!=', '>': '>', 'ge': '>=', '<': '<', 'le': '<=', 'doteq': 'same'}[command])];
 	case 'forall': case '?': case 'left{': case 'right}': case 'times': case 'in': case 'neg': case 'dots': case 'left|': case 'right|':
 		return [operatorToken(command)];
 	default:
-		throw 'unsupported command: ' + command;
+		return [literalToken(command)]; // stupid?
 	}
 }
 

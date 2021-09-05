@@ -8,7 +8,7 @@ function isPrinterConstant(tree) {
 	return false;
 }
 
-const special = ['pi', 'rho', 'theta', 'lambda', 'alpha'];
+const special = ['pi', 'rho', 'theta', 'lambda', 'alpha', 'int'];
 
 function printLatex(tree) {
 	if (!Array.isArray(tree)) {
@@ -19,7 +19,9 @@ function printLatex(tree) {
 		if (!isNaN(tree))
 			return String(tree);
 		let [pre,sub] = tree.split('_');
-		return (special.includes(pre) ? '\\' : '') + tree;
+		if (special.includes(pre))
+			return '\\' + tree;
+		return tree.length === 1 ? tree : '\\text{' + tree + '}';
 	}
 	var s, i;
 	switch (tree[0]) {
@@ -72,7 +74,7 @@ function printLatex(tree) {
 	case 'magnitude':
 		return '\\left|' + printLatex(tree[1]) + '\\right|';
 	default:
-		return '\\text{' + tree[0] + '}\\left[' + tree.slice(1).map(printLatex).join(',') + '\\right]';
+		return printLatex(tree[0]) + '\\left[' + tree.slice(1).map(printLatex).join(',') + '\\right]';
 	}
 }
 

@@ -8,11 +8,18 @@ function isPrinterConstant(tree) {
 	return false;
 }
 
-const special = ['pi', 'rho', 'theta'];
+const special = ['pi', 'rho', 'theta', 'lambda', 'alpha'];
 
 function printLatex(tree) {
 	if (!Array.isArray(tree)) {
-		return tree === true ? '\\text{true}' : (tree === false ? '\\text{false}' : (special.includes(tree) ? '\\' + tree : String(tree)));
+		if (tree === true)
+			return '\\text{true}';
+		if (tree === false)
+			return '\\text{false}';
+		if (!isNaN(tree))
+			return String(tree);
+		let [pre,sub] = tree.split('_');
+		return (special.includes(pre) ? '\\' : '') + tree;
 	}
 	var s, i;
 	switch (tree[0]) {

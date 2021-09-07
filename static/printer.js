@@ -21,7 +21,7 @@ function printLatex(tree) {
 		let [pre,sub] = tree.split('_');
 		if (special.includes(pre))
 			return '\\' + tree;
-		return tree.length === 1 ? tree : '\\text{' + tree + '}';
+		return tree.length === 1 ? tree : '\\text{' + pre + '}' + (sub ? '_' + sub : '');
 	}
 	var s, i;
 	switch (tree[0]) {

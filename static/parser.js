@@ -159,7 +159,7 @@ function expandCommand(command, arguments) {
 		return [operatorToken('equiv')];
 	case '=': case 'ne': case '>': case 'ge': case '<': case 'le': case 'doteq':
 		return [operatorToken({'=': '=', 'ne': '!=', '>': '>', 'ge': '>=', '<': '<', 'le': '<=', 'doteq': 'same'}[command])];
-	case 'forall': case '?': case 'left{': case 'right}': case 'times': case 'in': case 'neg': case 'dots': case 'left|': case 'right|':
+	case 'forall': case '?': case 'left{': case 'right}': case 'times': case 'in': case 'neg': case 'dots': case 'left|': case 'right|': case 'bullet':
 		return [operatorToken(command)];
 	default:
 		return [literalToken(command)]; // stupid?
@@ -257,6 +257,8 @@ function operatorToken(op) {
 		return operatorLpipeToken();
 	case 'right|':
 		return operatorRpipeToken();
+	case 'bullet':
+		return operatorDotToken();
 	default:
 		throw 'unsupported operator: ' + op;
 	}
@@ -311,6 +313,18 @@ function operatorMulToken() {
 		},
 		nud: function() {
 			return '*';
+		}
+	};
+}
+
+function operatorDotToken() {
+	return {
+		lbp: 20,
+		led: function(left) {
+			return ['dot', left, expression(20)];
+		},
+		nud: function() {
+			return 'dot';
 		}
 	};
 }

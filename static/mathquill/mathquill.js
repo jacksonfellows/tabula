@@ -3549,6 +3549,7 @@ LatexCmds.ring = LatexCmds.circ = LatexCmds.circle =
   bind(VanillaSymbol,'\\circ ','&#8728;');
 
 LatexCmds.bull = LatexCmds.bullet = bind(VanillaSymbol,'\\bullet ','&bull;');
+LatexCmds.dot = bind(VanillaSymbol,'\\bullet ','&bull;');
 
 LatexCmds.setminus = LatexCmds.smallsetminus =
   bind(VanillaSymbol,'\\setminus ','&#8726;');

@@ -10,6 +10,12 @@ function isPrinterConstant(tree) {
 
 const special = ['pi', 'rho', 'theta', 'lambda', 'alpha', 'int', 'gg', 'phi'];
 
+function wrapIfPlus(tree) {
+	if (tree[0] === '+')
+		return '\\left(' + printLatex(tree) + '\\right)';
+	return printLatex(tree);
+}
+
 function printLatex(tree) {
 	if (!Array.isArray(tree)) {
 		if (tree === true)
@@ -52,6 +58,8 @@ function printLatex(tree) {
 			}
 		}
 		return s;
+	case 'dot':
+		return wrapIfPlus(tree[1]) + ' \\bullet ' + wrapIfPlus(tree[2]);
 	case '/':
 		return '\\frac{' + printLatex(tree[1]) + '}{' + printLatex(tree[2]) + '}';
 	case '^':

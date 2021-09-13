@@ -5,7 +5,7 @@ const MQ_CONFIG = {
 	leftRightIntoCmdGoes: 'up',
 	restrictMismatchedBrackets: true,
 	supSubsRequireOperand: true,
-	autoCommands: 'pi theta rho forall equiv sqrt lambda neq cross Sigma Pi not same to choose'
+	autoCommands: 'pi theta rho forall equiv sqrt lambda neq cross Sigma Pi not same to choose dot'
 };
 
 MQ.config(MQ_CONFIG);

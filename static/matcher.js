@@ -545,6 +545,13 @@ function evalRange(range) {
 	return list;
 }
 
+function evalLet(tree) {
+	let def = tree[1];
+	if (def[0] !== 'define')
+		throw 'first argument to let must be define';
+	return findMatchAndReplace(def[1], tree[2], def[2], undefined, []);
+}
+
 function evalFunctions(tree) {
 	if (!Array.isArray(tree)) {
 		return tree;
@@ -565,6 +572,8 @@ function evalFunctions(tree) {
 		return !isNaN(evaledTail[0]);
 	case 'listcomp':
 		return listCompReady(tree) ? evalListComp(tree) : tree;
+	case 'let':
+		return evalLet(tree);
 	default:
 		return tree;
 	}

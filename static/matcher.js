@@ -478,6 +478,9 @@ function evalConstants(tree) {
 	case 'cos':
 		if (!isNaN(evaledTail[0]))
 			return Math.cos(evaledTail[0]);
+	case 'mod':
+		if (!isNaN(evaledTail[0]) && !isNaN(evaledTail[1]))
+			return evaledTail[0] % evaledTail[1];
 	default:
 		return [tree[0], ...evaledTail];
 	}

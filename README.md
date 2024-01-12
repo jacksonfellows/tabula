@@ -2,7 +2,7 @@
 
 ## Demo
 
-![Basic rewrite rule](demos/Basic rewrite rule.mov "Basic rewrite rule")
+![Basic rewrite rule](./demos/Basic_rewrite_rule.mov)
 
 ## Run
 ```

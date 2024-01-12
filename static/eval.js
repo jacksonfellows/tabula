@@ -161,7 +161,7 @@ function runCell(key) {
 			throw 'unsupported input type for note cells: ' + cell.input.type;
 		cell.output = {
 			type: 'MarkdownOutput',
-			html: marked(cell.input.text),
+			html: marked.parse(cell.input.text),
 		};
 		cell.output.invisible = false;
 		cell.input.invisible = true;

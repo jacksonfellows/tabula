@@ -2,7 +2,7 @@
 
 ## Demo
 
-![Basic rewrite rule](./demos/Basic_rewrite_rule.mov)
+![Basic rewrite rule](./demos/Basic_rewrite_rule.gif)
 
 ## Run
 ```
